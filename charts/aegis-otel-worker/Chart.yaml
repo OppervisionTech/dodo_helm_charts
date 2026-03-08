@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-otel-worker
+description: DoDo AegisOps OTEL Worker — Processes traces from Kafka, extracts topology
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"

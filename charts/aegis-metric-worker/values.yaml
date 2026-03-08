@@ -1,0 +1,88 @@
+nameOverride: ""
+fullnameOverride: ""
+component: metric-worker
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-metric-worker
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 10
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: true
+  port: 9090
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8080
+
+worker:
+  port: 8080
+  kafkaTopic: raw-metrics
+  consumerGroup: aegis-metric-worker
+  kafkaBrokers: "aegis-kafka:9092"
+  timescaledbConnection: "host=aegis-timescaledb port=5432 dbname=aegisops"
+  redisConnection: "aegis-redis:6379"
+
+secrets:
+  credentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress: []
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 9092  # Kafka
+    - ports:
+        - protocol: TCP
+          port: 5432  # TimescaleDB
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis (pub for live mode)
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

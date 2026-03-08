@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    kafka_topic: {{ .Values.worker.kafkaTopic | quote }}
+    consumer_group: {{ .Values.worker.consumerGroup | quote }}
+    kafka_brokers: {{ .Values.worker.kafkaBrokers | quote }}
+    timescaledb_connection: {{ .Values.worker.timescaledbConnection | quote }}
+    redis_connection: {{ .Values.worker.redisConnection | quote }}
