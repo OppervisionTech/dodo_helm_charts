@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "aegis.fullname" . }}-create-topics
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  backoffLimit: 6
+  template:
+    metadata:
+      labels:
+        {{- include "aegis.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: create-topics
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              BOOTSTRAP="{{ include "aegis.fullname" . }}:{{ .Values.service.port }}"
+              echo "Waiting for Kafka to be ready..."
+              until kafka-broker-api-versions.sh --bootstrap-server "$BOOTSTRAP" > /dev/null 2>&1; do
+                echo "Kafka not ready, waiting..."
+                sleep 5
+              done
+              echo "Kafka is ready. Creating topics..."
+              {{- range .Values.topics }}
+              echo "Creating topic {{ .name }} (partitions={{ .partitions }}, replication={{ .replicationFactor }})..."
+              kafka-topics.sh --bootstrap-server "$BOOTSTRAP" \
+                --create --if-not-exists \
+                --topic {{ .name }} \
+                --partitions {{ .partitions }} \
+                --replication-factor {{ .replicationFactor }}
+              {{- end }}
+              echo "All topics created successfully."

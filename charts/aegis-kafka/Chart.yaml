@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-kafka
+description: DoDo AegisOps Kafka — Message broker cluster (Kafka/Redpanda) with pre-created topics
+type: application
+version: 0.1.0
+appVersion: "3.7.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"

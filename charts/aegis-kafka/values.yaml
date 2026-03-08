@@ -1,0 +1,133 @@
+nameOverride: ""
+fullnameOverride: ""
+component: kafka
+gitSha: ""
+
+image:
+  repository: bitnami/kafka
+  tag: "3.7"
+  pullPolicy: IfNotPresent
+
+replicaCount: 3
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+health:
+  type: tcp
+  liveness:
+    port: kafka
+    initialDelay: 30
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    port: kafka
+    initialDelay: 15
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+
+containerSecurityContext:
+  readOnlyRootFilesystem: false  # Kafka writes to data dir
+
+metrics:
+  enabled: true
+  port: 9090
+  path: /metrics
+
+service:
+  port: 9092
+  interBrokerPort: 9093
+
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 50Gi
+
+pdb:
+  enabled: true
+  maxUnavailable: 1
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: aegis-kafka
+        topologyKey: kubernetes.io/hostname
+
+kafka:
+  kraftMode: true
+  clusterId: ""  # Auto-generated if empty
+  config:
+    logRetentionHours: 168  # 7 days
+    numPartitionsDefault: 6
+    defaultReplicationFactor: 3
+    minInsyncReplicas: 2
+    autoCreateTopicsEnable: false
+    logSegmentBytes: 1073741824  # 1GB
+    logRetentionCheckIntervalMs: 300000  # 5min
+
+topics:
+  - name: raw-metrics
+    partitions: 12
+    replicationFactor: 3
+  - name: raw-logs
+    partitions: 12
+    replicationFactor: 3
+  - name: otel-traces
+    partitions: 6
+    replicationFactor: 3
+  - name: agent-heartbeats
+    partitions: 3
+    replicationFactor: 3
+  - name: security-events
+    partitions: 6
+    replicationFactor: 3
+  - name: deploy-events
+    partitions: 3
+    replicationFactor: 3
+  - name: host-inventory
+    partitions: 3
+    replicationFactor: 3
+  - name: custom-events
+    partitions: 6
+    replicationFactor: 3
+  - name: cert-inventory
+    partitions: 3
+    replicationFactor: 3
+
+secrets:
+  credentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 9092  # Client
+    - ports:
+        - protocol: TCP
+          port: 9093  # Inter-broker
+  egress: []
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}
