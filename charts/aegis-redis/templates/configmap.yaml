@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  redis.conf: |
+    port {{ .Values.redis.port }}
+    maxmemory {{ .Values.redis.config.maxmemory }}
+    maxmemory-policy {{ .Values.redis.config.maxmemoryPolicy }}
+    appendonly {{ .Values.redis.config.appendonly }}
+    bind 0.0.0.0
+    protected-mode no

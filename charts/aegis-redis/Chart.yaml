@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-redis
+description: DoDo AegisOps Redis — Cache, heartbeat TTL, and pub/sub
+type: application
+version: 0.1.0
+appVersion: "7.2"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"

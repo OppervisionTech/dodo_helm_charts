@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  aegis-config.xml: |
+    <clickhouse>
+      <profiles>
+        <default>
+          <max_memory_usage>{{ .Values.clickhouse.config.maxMemoryUsage }}</max_memory_usage>
+          <max_threads>{{ .Values.clickhouse.config.maxThreads }}</max_threads>
+        </default>
+      </profiles>
+      <merge_tree>
+        <max_rows_to_use_cache>{{ .Values.clickhouse.config.mergeTreeMaxRowsToUseCache }}</max_rows_to_use_cache>
+      </merge_tree>
+    </clickhouse>

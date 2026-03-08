@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  postgresql.conf: |
+    shared_buffers = '{{ .Values.timescaledb.config.sharedBuffers }}'
+    work_mem = '{{ .Values.timescaledb.config.workMem }}'
+    effective_cache_size = '{{ .Values.timescaledb.config.effectiveCacheSize }}'
+    timescaledb.max_background_workers = {{ .Values.timescaledb.config.maxBackgroundWorkers }}
+    shared_preload_libraries = 'timescaledb'
+    listen_addresses = '*'

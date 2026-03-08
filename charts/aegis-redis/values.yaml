@@ -1,0 +1,83 @@
+nameOverride: ""
+fullnameOverride: ""
+component: redis
+gitSha: ""
+
+image:
+  repository: redis
+  tag: "7.2-alpine"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+health:
+  type: tcp
+  liveness:
+    port: redis
+    initialDelay: 15
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    port: redis
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 999
+  runAsGroup: 999
+  fsGroup: 999
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: true
+  port: 9121
+  path: /metrics
+
+service:
+  port: 6379
+
+persistence:
+  enabled: false  # Cache mode by default (no persistence)
+  storageClass: ""
+  size: 10Gi
+
+redis:
+  port: 6379
+  config:
+    maxmemory: 256mb
+    maxmemoryPolicy: allkeys-lru
+    appendonly: "no"  # Disable AOF for cache mode
+
+secrets:
+  credentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 6379
+  egress: []
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

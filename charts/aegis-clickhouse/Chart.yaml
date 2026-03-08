@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-clickhouse
+description: DoDo AegisOps ClickHouse — Log, trace, and event analytics storage
+type: application
+version: 0.1.0
+appVersion: "24.2"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-postgresql
+description: DoDo AegisOps PostgreSQL — CMDB, state, and pgvector embeddings storage
+type: application
+version: 0.1.0
+appVersion: "16"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"

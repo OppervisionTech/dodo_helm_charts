@@ -1,0 +1,95 @@
+nameOverride: ""
+fullnameOverride: ""
+component: timescaledb
+gitSha: ""
+
+image:
+  repository: timescale/timescaledb-ha
+  tag: "pg16"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+health:
+  type: tcp
+  liveness:
+    port: postgresql
+    initialDelay: 30
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    port: postgresql
+    initialDelay: 10
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 70
+  runAsGroup: 70
+  fsGroup: 70
+
+containerSecurityContext:
+  readOnlyRootFilesystem: false
+
+metrics:
+  enabled: true
+  port: 9187
+  path: /metrics
+
+service:
+  port: 5432
+
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 100Gi
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+timescaledb:
+  port: 5432
+  database: aegisops
+  config:
+    sharedBuffers: 1GB
+    workMem: 64MB
+    maxBackgroundWorkers: 8
+    effectiveCacheSize: 3GB
+  retentionDays: 30
+
+initDb:
+  enabled: true
+  extensions:
+    - timescaledb
+
+secrets:
+  credentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 5432
+  egress: []
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}
