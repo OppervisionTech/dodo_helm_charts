@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: check-merge-conflict
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: ["-c", ".yamllint.yml"]
+        files: \.(yaml|yml)$
+
+  - repo: local
+    hooks:
+      - id: helm-lint
+        name: helm-lint
+        entry: bash -c 'for chart in charts/*/; do if [ -f "$chart/Chart.yaml" ]; then helm lint "$chart" || exit 1; fi; done'
+        language: system
+        files: charts/
+        pass_filenames: false

@@ -1,0 +1,132 @@
+name: Helm CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      charts: ${{ steps.filter.outputs.charts }}
+      values: ${{ steps.filter.outputs.values }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            charts:
+              - 'charts/**'
+              - 'values/**'
+            values:
+              - 'values/**'
+
+  yaml-lint:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.charts == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install yamllint
+        run: pip install yamllint
+      - name: Run yamllint
+        run: yamllint -c .yamllint.yml charts/ values/
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.charts == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+      - name: Helm lint all charts
+        run: |
+          for chart in charts/*/; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              echo "--- Linting $chart ---"
+              helm dependency build "$chart" 2>/dev/null || true
+              helm lint "$chart"
+            fi
+          done
+
+  template:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        env: [dev, qa, prod]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+      - name: Helm template (${{ matrix.env }})
+        run: |
+          for chart in charts/*/; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              name=$(basename "$chart")
+              echo "--- Templating $name (${{ matrix.env }}) ---"
+              helm dependency build "$chart" 2>/dev/null || true
+              if [ -f "values/values-${{ matrix.env }}.yaml" ]; then
+                helm template "$name" "$chart" -f "values/values-${{ matrix.env }}.yaml"
+              else
+                helm template "$name" "$chart"
+              fi
+            fi
+          done
+
+  unittest:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+      - name: Install helm-unittest
+        run: helm plugin install https://github.com/helm-unittest/helm-unittest
+      - name: Run unit tests
+        run: |
+          for chart in charts/*/; do
+            if [ -d "$chart/tests" ]; then
+              echo "--- Testing $chart ---"
+              helm dependency build "$chart" 2>/dev/null || true
+              helm unittest "$chart"
+            fi
+          done
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+      - name: Install kubesec
+        run: |
+          curl -sSL https://github.com/controlplaneio/kubesec/releases/download/v2.14.0/kubesec_linux_amd64.tar.gz | tar xz
+          sudo mv kubesec /usr/local/bin/
+      - name: Security scan rendered templates
+        run: |
+          for chart in charts/*/; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              name=$(basename "$chart")
+              echo "--- Scanning $name ---"
+              helm dependency build "$chart" 2>/dev/null || true
+              helm template "$name" "$chart" > /tmp/rendered.yaml 2>/dev/null || true
+              if [ -s /tmp/rendered.yaml ]; then
+                kubesec scan /tmp/rendered.yaml || echo "WARNING: kubesec found issues in $name"
+              fi
+            fi
+          done

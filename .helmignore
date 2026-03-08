@@ -1,0 +1,12 @@
+# Patterns to ignore when building packages.
+.git
+*.md
+tests/
+.github/
+.editorconfig
+.yamllint.yml
+.pre-commit-config.yaml
+Makefile
+scripts/
+docs/
+values/
