@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    {{- include "aegis.annotations" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "aegis.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    type: {{ .Values.updateStrategy.type }}
+    {{- if eq .Values.updateStrategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.updateStrategy.rollingUpdate.maxUnavailable }}
+    {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- include "aegis.labels" . | nindent 8 }}
+      annotations:
+        {{- include "aegis.prometheusAnnotations" . | nindent 8 }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "aegis.serviceAccountName" . }}
+      {{- include "aegis.podSecurityContext" . | nindent 6 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      tolerations:
+        {{- if .Values.tolerateMasters }}
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        {{- end }}
+        {{- with .Values.tolerations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: agent
+          {{- include "aegis.image" . | nindent 10 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.agent.port }}
+              protocol: TCP
+          {{- include "aegis.healthCheck" . | nindent 10 }}
+          {{- include "aegis.resourceLimits" . | nindent 10 }}
+          {{- include "aegis.containerSecurityContext" . | nindent 10 }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/aegis-agent
+              readOnly: true
+            - name: proc
+              mountPath: /host/proc
+              readOnly: true
+            - name: sys
+              mountPath: /host/sys
+              readOnly: true
+            - name: varlog
+              mountPath: /host/var/log
+              readOnly: true
+            - name: buffer
+              mountPath: {{ .Values.agent.bufferPath }}
+            {{- if .Values.tls.secretName }}
+            - name: tls
+              mountPath: /etc/aegis-agent/tls
+              readOnly: true
+            {{- end }}
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "aegis.fullname" . }}
+        - name: proc
+          hostPath:
+            path: /proc
+            type: Directory
+        - name: sys
+          hostPath:
+            path: /sys
+            type: Directory
+        - name: varlog
+          hostPath:
+            path: /var/log
+            type: Directory
+        - name: buffer
+          {{- if eq .Values.buffer.type "hostPath" }}
+          hostPath:
+            path: {{ .Values.buffer.hostPath }}
+            type: DirectoryOrCreate
+          {{- else }}
+          persistentVolumeClaim:
+            claimName: {{ include "aegis.fullname" . }}-buffer
+          {{- end }}
+        {{- if .Values.tls.secretName }}
+        - name: tls
+          secret:
+            secretName: {{ .Values.tls.secretName }}
+        {{- end }}

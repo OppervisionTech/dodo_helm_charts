@@ -1,0 +1,104 @@
+nameOverride: ""
+fullnameOverride: ""
+component: agent
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-agent
+  tag: ""
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 15
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+  fsGroup: 0
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  addCapabilities:
+    - SYS_PTRACE
+
+metrics:
+  enabled: true
+  port: 9090
+  path: /metrics
+
+# Agent-specific configuration
+agent:
+  port: 9090
+  collectionInterval: 30s
+  collectors:
+    cpu: true
+    memory: true
+    disk: true
+    network: true
+    processes: true
+    kubernetes: false
+  ingestorEndpoint: "aegis-ingestor:50051"
+  bufferPath: /var/lib/aegis-agent/buffer
+  bufferMaxSize: 512Mi
+
+# mTLS certificate secret (required)
+tls:
+  secretName: ""
+
+# Buffer storage
+buffer:
+  type: hostPath  # hostPath or pvc
+  hostPath: /var/lib/aegis-agent/buffer
+  pvc:
+    storageClass: ""
+    size: 1Gi
+
+# DaemonSet update strategy
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+
+# Tolerations for scheduling on master/control-plane nodes
+tolerateMasters: false
+
+tolerations: []
+nodeSelector: {}
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress: []
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 50051  # gRPC to ingestor
+
+extraAnnotations: {}

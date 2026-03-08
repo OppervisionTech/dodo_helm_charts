@@ -1,0 +1,30 @@
+{{- if and .Values.serviceAccount.create .Values.agent.collectors.kubernetes }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "nodes/metrics", "nodes/stats", "pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "aegis.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "aegis.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

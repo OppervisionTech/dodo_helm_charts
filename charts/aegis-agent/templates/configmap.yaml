@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  agent.yaml: |
+    collection_interval: {{ .Values.agent.collectionInterval | quote }}
+    ingestor_endpoint: {{ .Values.agent.ingestorEndpoint | quote }}
+    buffer_path: {{ .Values.agent.bufferPath | quote }}
+    buffer_max_size: {{ .Values.agent.bufferMaxSize | quote }}
+    collectors:
+      cpu: {{ .Values.agent.collectors.cpu }}
+      memory: {{ .Values.agent.collectors.memory }}
+      disk: {{ .Values.agent.collectors.disk }}
+      network: {{ .Values.agent.collectors.network }}
+      processes: {{ .Values.agent.collectors.processes }}
+      kubernetes: {{ .Values.agent.collectors.kubernetes }}
