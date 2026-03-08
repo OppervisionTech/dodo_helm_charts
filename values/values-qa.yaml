@@ -1,0 +1,205 @@
+# =============================================================================
+# AegisOps QA Environment Values
+# =============================================================================
+# Simulates production at reduced scale. TLS enabled (staging LE).
+# 2 replicas for services, moderate resources.
+# =============================================================================
+
+global:
+  environment: qa
+  domain: qa.aegisops.io
+  logLevel: info
+
+# --- aegis-agent ---
+aegis-agent:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# --- aegis-ingestor ---
+aegis-ingestor:
+  replicaCount: 2
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# --- aegis-ai-core ---
+aegis-ai-core:
+  replicaCount: 1
+  gpu:
+    enabled: false
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  modelCache:
+    size: 10Gi
+
+# --- aegis-query-api ---
+aegis-query-api:
+  replicaCount: 2
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+
+# --- Workers ---
+aegis-metric-worker:
+  replicaCount: 2
+
+aegis-log-worker:
+  replicaCount: 2
+
+aegis-health-monitor:
+  replicaCount: 2
+
+aegis-otel-worker:
+  replicaCount: 2
+
+# --- Frontends ---
+aegis-dashboard:
+  replicaCount: 2
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+  ingress:
+    hostname: dashboard.qa.aegisops.io
+    tls:
+      enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-staging
+
+aegis-portal:
+  replicaCount: 2
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+  ingress:
+    hostname: portal.qa.aegisops.io
+    tls:
+      enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-staging
+
+# --- Kong ---
+aegis-kong:
+  replicaCount: 2
+  service:
+    type: LoadBalancer
+  kong:
+    admin:
+      enabled: false
+
+# --- Kafka ---
+aegis-kafka:
+  replicaCount: 2
+  persistence:
+    size: 50Gi
+  kafka:
+    config:
+      defaultReplicationFactor: 2
+      minInsyncReplicas: 1
+      numPartitionsDefault: 6
+  topics:
+    - name: raw-metrics
+      partitions: 6
+      replicationFactor: 2
+    - name: raw-logs
+      partitions: 6
+      replicationFactor: 2
+    - name: otel-traces
+      partitions: 3
+      replicationFactor: 2
+    - name: agent-heartbeats
+      partitions: 3
+      replicationFactor: 2
+    - name: security-events
+      partitions: 3
+      replicationFactor: 2
+    - name: deploy-events
+      partitions: 3
+      replicationFactor: 2
+    - name: host-inventory
+      partitions: 3
+      replicationFactor: 2
+    - name: custom-events
+      partitions: 3
+      replicationFactor: 2
+    - name: cert-inventory
+      partitions: 3
+      replicationFactor: 2
+
+# --- Datastores ---
+aegis-timescaledb:
+  persistence:
+    size: 50Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  timescaledb:
+    config:
+      sharedBuffers: 512MB
+      workMem: 32MB
+      effectiveCacheSize: 1536MB
+      maxBackgroundWorkers: 6
+
+aegis-clickhouse:
+  persistence:
+    size: 50Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  clickhouse:
+    config:
+      maxMemoryUsage: 1073741824  # 1GB
+      maxThreads: 4
+
+aegis-postgresql:
+  persistence:
+    size: 20Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+aegis-redis:
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  redis:
+    config:
+      maxmemory: 128mb

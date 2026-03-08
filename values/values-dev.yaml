@@ -1,0 +1,267 @@
+# =============================================================================
+# AegisOps Dev Environment Values
+# =============================================================================
+# Optimized for local/small clusters (kind, minikube).
+# Minimal replicas, reduced resources, TLS optional, debug logging.
+# =============================================================================
+
+# --- Global overrides ---
+global:
+  environment: dev
+  domain: dev.aegisops.local
+  logLevel: debug
+
+# --- aegis-agent ---
+aegis-agent:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  agent:
+    ingestorEndpoint: "aegis-ingestor:50051"
+
+# --- aegis-ingestor ---
+aegis-ingestor:
+  replicaCount: 1
+  hpa:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# --- aegis-ai-core ---
+aegis-ai-core:
+  replicaCount: 1
+  gpu:
+    enabled: false
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  modelCache:
+    size: 5Gi
+
+# --- aegis-query-api ---
+aegis-query-api:
+  replicaCount: 1
+  hpa:
+    enabled: false
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# --- Workers (all) ---
+aegis-metric-worker:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+aegis-log-worker:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+aegis-health-monitor:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+aegis-otel-worker:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# --- Frontends ---
+aegis-dashboard:
+  replicaCount: 1
+  hpa:
+    enabled: false
+  ingress:
+    hostname: dashboard.dev.aegisops.local
+    tls:
+      enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+aegis-portal:
+  replicaCount: 1
+  hpa:
+    enabled: false
+  ingress:
+    hostname: portal.dev.aegisops.local
+    tls:
+      enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# --- Kong ---
+aegis-kong:
+  replicaCount: 1
+  hpa:
+    enabled: false
+  service:
+    type: NodePort
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  kong:
+    admin:
+      enabled: true  # Enable admin API in dev
+
+# --- Kafka ---
+aegis-kafka:
+  replicaCount: 1
+  persistence:
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  kafka:
+    config:
+      defaultReplicationFactor: 1
+      minInsyncReplicas: 1
+      numPartitionsDefault: 3
+  topics:
+    - name: raw-metrics
+      partitions: 3
+      replicationFactor: 1
+    - name: raw-logs
+      partitions: 3
+      replicationFactor: 1
+    - name: otel-traces
+      partitions: 3
+      replicationFactor: 1
+    - name: agent-heartbeats
+      partitions: 1
+      replicationFactor: 1
+    - name: security-events
+      partitions: 1
+      replicationFactor: 1
+    - name: deploy-events
+      partitions: 1
+      replicationFactor: 1
+    - name: host-inventory
+      partitions: 1
+      replicationFactor: 1
+    - name: custom-events
+      partitions: 1
+      replicationFactor: 1
+    - name: cert-inventory
+      partitions: 1
+      replicationFactor: 1
+  affinity: {}
+
+# --- Datastores ---
+aegis-timescaledb:
+  persistence:
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  timescaledb:
+    config:
+      sharedBuffers: 256MB
+      workMem: 16MB
+      effectiveCacheSize: 768MB
+      maxBackgroundWorkers: 4
+
+aegis-clickhouse:
+  persistence:
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  clickhouse:
+    config:
+      maxMemoryUsage: 536870912  # 512MB
+      maxThreads: 2
+
+aegis-postgresql:
+  persistence:
+    size: 10Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  postgresql:
+    config:
+      sharedBuffers: 128MB
+      workMem: 16MB
+      effectiveCacheSize: 384MB
+
+aegis-redis:
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  redis:
+    config:
+      maxmemory: 64mb

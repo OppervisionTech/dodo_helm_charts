@@ -1,0 +1,282 @@
+# =============================================================================
+# AegisOps Production Environment Values
+# =============================================================================
+# Full HA configuration. TLS mandatory (production LE).
+# 3+ replicas for critical services, production-grade resources.
+# Designed for ~1000 agents sending data simultaneously.
+# =============================================================================
+
+global:
+  environment: prod
+  domain: aegisops.io
+  logLevel: warn
+
+# --- aegis-agent ---
+aegis-agent:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  buffer:
+    type: hostPath
+    hostPath: /var/lib/aegis-agent/buffer
+
+# --- aegis-ingestor ---
+aegis-ingestor:
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+# --- aegis-ai-core ---
+aegis-ai-core:
+  replicaCount: 2
+  gpu:
+    enabled: false  # Enable when GPU nodes available
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  modelCache:
+    size: 50Gi
+
+# --- aegis-query-api ---
+aegis-query-api:
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+# --- Workers ---
+aegis-metric-worker:
+  replicaCount: 3
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+aegis-log-worker:
+  replicaCount: 3
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+aegis-health-monitor:
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+aegis-otel-worker:
+  replicaCount: 3
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# --- Frontends ---
+aegis-dashboard:
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+  ingress:
+    hostname: dashboard.aegisops.io
+    tls:
+      enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-production
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+aegis-portal:
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+  ingress:
+    hostname: portal.aegisops.io
+    tls:
+      enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-production
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# --- Kong ---
+aegis-kong:
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+  service:
+    type: LoadBalancer
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  kong:
+    admin:
+      enabled: false  # NEVER enable admin in production
+
+# --- Kafka ---
+aegis-kafka:
+  replicaCount: 3
+  persistence:
+    size: 500Gi
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  kafka:
+    config:
+      logRetentionHours: 168  # 7 days
+      defaultReplicationFactor: 3
+      minInsyncReplicas: 2
+      numPartitionsDefault: 12
+  topics:
+    - name: raw-metrics
+      partitions: 12
+      replicationFactor: 3
+    - name: raw-logs
+      partitions: 12
+      replicationFactor: 3
+    - name: otel-traces
+      partitions: 6
+      replicationFactor: 3
+    - name: agent-heartbeats
+      partitions: 3
+      replicationFactor: 3
+    - name: security-events
+      partitions: 6
+      replicationFactor: 3
+    - name: deploy-events
+      partitions: 3
+      replicationFactor: 3
+    - name: host-inventory
+      partitions: 3
+      replicationFactor: 3
+    - name: custom-events
+      partitions: 6
+      replicationFactor: 3
+    - name: cert-inventory
+      partitions: 3
+      replicationFactor: 3
+
+# --- Datastores ---
+aegis-timescaledb:
+  persistence:
+    size: 500Gi
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 4Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  timescaledb:
+    config:
+      sharedBuffers: 4GB
+      workMem: 64MB
+      effectiveCacheSize: 6GB
+      maxBackgroundWorkers: 8
+    retentionDays: 90
+
+aegis-clickhouse:
+  persistence:
+    size: 1000Gi
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 4Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  clickhouse:
+    config:
+      maxMemoryUsage: 4294967296  # 4GB
+      maxThreads: 8
+
+aegis-postgresql:
+  persistence:
+    size: 100Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  postgresql:
+    config:
+      sharedBuffers: 1GB
+      workMem: 64MB
+      effectiveCacheSize: 3GB
+
+aegis-redis:
+  persistence:
+    enabled: true  # Persistence in prod for recovery
+    size: 20Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  redis:
+    config:
+      maxmemory: 512mb
+      appendonly: "yes"  # Enable AOF in prod
