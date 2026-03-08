@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    pgvector_endpoint: {{ .Values.aiCore.pgvectorEndpoint | quote }}
+    clickhouse_endpoint: {{ .Values.aiCore.clickhouseEndpoint | quote }}
+    redis_endpoint: {{ .Values.aiCore.redisEndpoint | quote }}
+    models:
+      anomaly_threshold: {{ .Values.aiCore.models.anomalyThreshold }}
+      classification_min_confidence: {{ .Values.aiCore.models.classificationMinConfidence }}
+    model_cache_path: {{ .Values.modelCache.mountPath | quote }}
