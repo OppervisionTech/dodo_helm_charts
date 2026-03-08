@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-dashboard
+description: DoDo AegisOps Dashboard — Next.js observability dashboard
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"
