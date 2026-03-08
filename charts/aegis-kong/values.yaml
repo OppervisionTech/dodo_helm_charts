@@ -1,0 +1,120 @@
+nameOverride: ""
+fullnameOverride: ""
+component: kong
+gitSha: ""
+
+image:
+  repository: kong
+  tag: "3.6"
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+health:
+  type: http
+  liveness:
+    path: /status
+    port: admin
+    initialDelay: 15
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /status
+    port: admin
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: true
+  port: 8100
+  path: /metrics
+
+service:
+  type: LoadBalancer
+  httpPort: 443
+  adminPort: 8444
+  adminType: ClusterIP
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+kong:
+  proxyPort: 8443
+  adminPort: 8444
+  metricsPort: 8100
+  routes:
+    ingestor:
+      path: /ingest
+      upstream: "aegis-ingestor:50051"
+      protocol: grpc
+    queryApi:
+      path: /api
+      upstream: "aegis-query-api:8080"
+      protocol: http
+  plugins:
+    mtls: true
+    jwtAuth: true
+    rateLimiting:
+      enabled: true
+      minuteLimit: 1000
+      secondLimit: 100
+    prometheus: true
+    cors:
+      enabled: true
+      origins: "*"
+      methods: "GET,POST,OPTIONS"
+  admin:
+    enabled: false  # Disabled in production
+
+tls:
+  secretName: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 443   # Proxy HTTPS
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 50051  # Ingestor gRPC
+    - ports:
+        - protocol: TCP
+          port: 8080   # Query API
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

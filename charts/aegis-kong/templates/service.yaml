@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.httpPort }}
+      targetPort: proxy
+      protocol: TCP
+      name: proxy
+  selector:
+    {{- include "aegis.selectorLabels" . | nindent 4 }}
+---
+{{- if .Values.kong.admin.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aegis.fullname" . }}-admin
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.adminType }}
+  ports:
+    - port: {{ .Values.service.adminPort }}
+      targetPort: admin
+      protocol: TCP
+      name: admin
+  selector:
+    {{- include "aegis.selectorLabels" . | nindent 4 }}
+{{- end }}

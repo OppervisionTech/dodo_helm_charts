@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-kong
+description: DoDo AegisOps Kong — API Gateway with mTLS, rate limiting, and routing
+type: application
+version: 0.1.0
+appVersion: "3.6.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"
