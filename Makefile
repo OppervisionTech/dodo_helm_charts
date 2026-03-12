@@ -23,11 +23,14 @@ lint-all: ## Lint all charts
 
 template: ## Render templates for a specific chart (usage: make template CHART=aegis-agent ENV=dev)
 	@if [ -z "$(CHART)" ]; then echo "Usage: make template CHART=<chart-name> [ENV=dev|qa|prod]"; exit 1; fi
-	@if [ -n "$(ENV)" ] && [ -f values/values-$(ENV).yaml ]; then \
-		helm template $(CHART) $(CHARTS_DIR)/$(CHART) -f values/values-$(ENV).yaml; \
-	else \
-		helm template $(CHART) $(CHARTS_DIR)/$(CHART); \
-	fi
+	@VALUES_ARGS=""; \
+	if [ -n "$(ENV)" ] && [ -f "values/values-$(ENV).yaml" ]; then \
+		VALUES_ARGS="$$VALUES_ARGS -f values/values-$(ENV).yaml"; \
+	fi; \
+	if [ -n "$(ENV)" ] && [ -f "$(CHARTS_DIR)/$(CHART)/values-$(ENV).yaml" ]; then \
+		VALUES_ARGS="$$VALUES_ARGS -f $(CHARTS_DIR)/$(CHART)/values-$(ENV).yaml"; \
+	fi; \
+	helm template $(CHART) $(CHARTS_DIR)/$(CHART) $$VALUES_ARGS
 
 template-all: ## Render templates for all charts
 	@echo "Rendering all chart templates..."
@@ -68,3 +71,28 @@ test: ## Run helm-unittest for all charts
 yamllint: ## Run yamllint on all YAML files
 	@echo "Running yamllint..."
 	yamllint -c .yamllint.yml charts/ values/
+
+deps: ## Build helm dependencies for all charts (usage: make deps or make deps CHART=aegis-kong)
+	@if [ -n "$(CHART)" ]; then \
+		echo "Building dependencies for $(CHART)..."; \
+		helm dependency build $(CHARTS_DIR)/$(CHART); \
+	else \
+		echo "Building dependencies for all charts..."; \
+		for chart in $(CHARTS); do \
+			echo "--- $$chart ---"; \
+			helm dependency build $$chart 2>/dev/null || true; \
+		done; \
+	fi
+
+cert-manager-install: ## Instala cert-manager no cluster (pré-requisito para aegis-cert-manager)
+	helm repo add jetstack https://charts.jetstack.io
+	helm repo update
+	helm upgrade --install cert-manager jetstack/cert-manager \
+		--namespace cert-manager \
+		--create-namespace \
+		--set installCRDs=true \
+		--version v1.14.0
+
+kong-repo-add: ## Adiciona repositório oficial do Kong para o subchart KIC
+	helm repo add kong https://charts.konghq.com
+	helm repo update

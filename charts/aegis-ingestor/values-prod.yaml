@@ -1,0 +1,26 @@
+# =============================================================================
+# aegis-ingestor — Production Environment Values
+# =============================================================================
+# HPA agressivo (3-20), recursos de produção.
+# Projetado para pico de ~1000 agentes simultâneos.
+# =============================================================================
+
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 75
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+ingestor:
+  rateLimitRps: 10000
+  batchSize: 100
+  batchTimeoutMs: 50

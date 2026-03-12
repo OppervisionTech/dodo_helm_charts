@@ -1,0 +1,24 @@
+# =============================================================================
+# aegis-query-api — Staging Environment Values
+# =============================================================================
+# 2 réplicas, HPA moderado (2-5), CORS restrito aos domínios QA.
+# =============================================================================
+
+replicaCount: 2
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+queryApi:
+  corsAllowedOrigins: "https://dashboard.staging.aegisops.io,https://portal.staging.aegisops.io"

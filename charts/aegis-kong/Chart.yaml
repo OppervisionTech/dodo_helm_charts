@@ -1,10 +1,18 @@
 apiVersion: v2
 name: aegis-kong
-description: DoDo AegisOps Kong — API Gateway with mTLS, rate limiting, and routing
+description: >
+  DoDo AegisOps Kong — Routing e plugins de aplicação via Kong Ingress Controller.
+  Define KongPlugin CRDs (rate-limit, JWT, CORS, security headers) e Ingress routes
+  para ingestor (gRPC) e query-api (HTTP).
+  PRÉ-REQUISITO: KIC e cert-manager provisionados pelo dodo_helm_charts_infra.
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "3.6.0"
-dependencies:
-  - name: aegis-library
-    version: "0.1.0"
-    repository: "file://../_library"
+keywords:
+  - kong
+  - ingress
+  - api-gateway
+  - grpc
+maintainers:
+  - name: Oppervision
+    email: ops@aegisops.io

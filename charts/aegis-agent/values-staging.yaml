@@ -1,0 +1,22 @@
+# =============================================================================
+# aegis-agent — Staging Environment Values
+# =============================================================================
+# Simula produção em escala reduzida.
+# Recursos moderados, coleta padrão.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+agent:
+  collectionInterval: 30s
+  ingestorEndpoint: "aegis-ingestor:50051"
+
+buffer:
+  type: hostPath
+  hostPath: /var/lib/aegis-agent/buffer

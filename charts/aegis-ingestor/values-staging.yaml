@@ -1,0 +1,27 @@
+# =============================================================================
+# aegis-ingestor — Staging Environment Values
+# =============================================================================
+# 2 réplicas, HPA moderado (2-5), recursos intermediários.
+# =============================================================================
+
+replicaCount: 2
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+ingestor:
+  rateLimitRps: 5000
+  batchSize: 100
+  batchTimeoutMs: 50

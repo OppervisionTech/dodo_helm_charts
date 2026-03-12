@@ -1,0 +1,34 @@
+# =============================================================================
+# aegis-portal — Staging Environment Values
+# =============================================================================
+# 2 réplicas, HPA moderado, TLS via cert-manager (LE staging), ingress Kong.
+# =============================================================================
+
+replicaCount: 2
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+ingress:
+  className: kong
+  hostname: portal.staging.aegisops.io
+  tls:
+    enabled: true
+    secretName: portal-qa-tls
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "301"
+
+portal:
+  queryApiUrl: "http://aegis-query-api:8080"

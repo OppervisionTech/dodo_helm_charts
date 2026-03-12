@@ -1,0 +1,93 @@
+# =============================================================================
+# KongPlugin CRDs — Rate Limiting, JWT Auth, CORS, Security Headers
+# Plugins globais aplicados via anotações nos Ingress resources.
+# =============================================================================
+
+{{- if .Values.plugins.rateLimitingIngestor.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rate-limiting-ingestor
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+plugin: rate-limiting
+config:
+  minute: {{ .Values.plugins.rateLimitingIngestor.minuteLimit }}
+  second: {{ .Values.plugins.rateLimitingIngestor.secondLimit }}
+  policy: {{ .Values.plugins.rateLimitingIngestor.policy }}
+{{- end }}
+
+{{- if .Values.plugins.rateLimitingApi.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rate-limiting-api
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+plugin: rate-limiting
+config:
+  minute: {{ .Values.plugins.rateLimitingApi.minuteLimit }}
+  second: {{ .Values.plugins.rateLimitingApi.secondLimit }}
+  policy: {{ .Values.plugins.rateLimitingApi.policy }}
+{{- end }}
+
+{{- if .Values.plugins.jwtAuth.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: jwt-auth
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+plugin: jwt
+config:
+  key_claim_name: {{ .Values.plugins.jwtAuth.keyClaimName }}
+  maximum_expiration: {{ .Values.plugins.jwtAuth.maximumExpiration }}
+{{- end }}
+
+{{- if .Values.plugins.corsApi.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cors-api
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+plugin: cors
+config:
+  origins:
+    {{- range .Values.plugins.corsApi.origins }}
+    - {{ . | quote }}
+    {{- end }}
+  methods:
+    {{- range .Values.plugins.corsApi.methods }}
+    - {{ . | quote }}
+    {{- end }}
+  headers:
+    {{- range .Values.plugins.corsApi.headers }}
+    - {{ . | quote }}
+    {{- end }}
+  max_age: {{ .Values.plugins.corsApi.maxAge }}
+  credentials: false
+{{- end }}
+
+{{- if .Values.plugins.securityHeaders.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: security-headers
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+plugin: response-transformer
+config:
+  add:
+    headers:
+      - "X-Frame-Options:DENY"
+      - "X-Content-Type-Options:nosniff"
+      - "Strict-Transport-Security:max-age=31536000; includeSubDomains"
+      - "X-XSS-Protection:1; mode=block"
+      - "Referrer-Policy:strict-origin-when-cross-origin"
+{{- end }}

@@ -1,120 +1,192 @@
-nameOverride: ""
-fullnameOverride: ""
-component: kong
+# =============================================================================
+# aegis-kong — Kong Ingress Controller (KIC) Values
+# =============================================================================
+# Wraps o chart oficial kong/ingress (KIC v3).
+# Rotas API definidas via Ingress + KongPlugin CRDs.
+#
+# PRÉ-REQUISITO: Instalar os CRDs do Kong antes do primeiro deploy:
+#   helm repo add kong https://charts.konghq.com
+#   helm repo update
+#   # Os CRDs são instalados automaticamente pelo subchart (kic)
+# =============================================================================
+
 gitSha: ""
 
-image:
-  repository: kong
-  tag: "3.6"
-  pullPolicy: IfNotPresent
+# ---------------------------------------------------------------------------
+# KIC Subchart (alias: kic) — configura gateway + controller
+# Ref: https://github.com/Kong/charts/tree/main/charts/ingress
+# ---------------------------------------------------------------------------
+kic:
+  # Gateway (Kong proxy)
+  gateway:
+    enabled: true
+    replicaCount: 2
+    image:
+      repository: kong
+      tag: "3.6"
+      pullPolicy: IfNotPresent
 
-replicaCount: 2
+    env:
+      database: "off"  # DB-less mode obrigatório com KIC
 
-resources:
-  requests:
-    cpu: 200m
-    memory: 256Mi
-  limits:
-    cpu: 1000m
-    memory: 1Gi
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
 
-health:
-  type: http
-  liveness:
-    path: /status
-    port: admin
-    initialDelay: 15
-    period: 20
-    timeout: 5
-    failureThreshold: 3
-  readiness:
-    path: /status
-    port: admin
-    initialDelay: 5
-    period: 10
-    timeout: 3
-    failureThreshold: 3
+    # Proxy service — exposto como LoadBalancer
+    proxy:
+      type: LoadBalancer
+      http:
+        enabled: true    # Necessário para ACME HTTP-01 challenge do cert-manager
+        servicePort: 80
+        containerPort: 8000
+      tls:
+        enabled: true
+        servicePort: 443
+        containerPort: 8443
 
-serviceAccount:
-  create: true
-  name: ""
-  annotations: {}
+    # Admin API — desabilitado por padrão, habilitado apenas em dev
+    admin:
+      enabled: false
+      type: ClusterIP
+      http:
+        enabled: false
+      tls:
+        enabled: false
 
-podSecurityContext:
-  runAsUser: 1000
-  runAsGroup: 1000
-  fsGroup: 1000
-
-containerSecurityContext:
-  readOnlyRootFilesystem: true
-
-metrics:
-  enabled: true
-  port: 8100
-  path: /metrics
-
-service:
-  type: LoadBalancer
-  httpPort: 443
-  adminPort: 8444
-  adminType: ClusterIP
-
-hpa:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 70
-
-pdb:
-  enabled: true
-  minAvailable: 1
-
-kong:
-  proxyPort: 8443
-  adminPort: 8444
-  metricsPort: 8100
-  routes:
-    ingestor:
-      path: /ingest
-      upstream: "aegis-ingestor:50051"
-      protocol: grpc
-    queryApi:
-      path: /api
-      upstream: "aegis-query-api:8080"
-      protocol: http
-  plugins:
-    mtls: true
-    jwtAuth: true
-    rateLimiting:
+    # Status port para health checks internos
+    status:
       enabled: true
-      minuteLimit: 1000
-      secondLimit: 100
-    prometheus: true
-    cors:
+      http:
+        enabled: true
+        containerPort: 8100
+
+    podSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+
+  # Ingress Controller
+  controller:
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: kong/kubernetes-ingress-controller
+      tag: "3.2"
+      pullPolicy: IfNotPresent
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+    ingressClass: kong
+
+    podSecurityContext:
+      runAsUser: 65534
+      runAsGroup: 65534
+      fsGroup: 65534
+
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: [ALL]
+
+  # HPA para o gateway
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+# ---------------------------------------------------------------------------
+# KongPlugin resources (CRDs)
+# ---------------------------------------------------------------------------
+plugins:
+  # Rate limiting global para ingestor
+  rateLimitingIngestor:
+    enabled: true
+    minuteLimit: 1000
+    secondLimit: 100
+    policy: local  # local | redis (usar redis em prod para distribuído)
+
+  # Rate limiting para query-api
+  rateLimitingApi:
+    enabled: true
+    minuteLimit: 500
+    secondLimit: 50
+    policy: local
+
+  # JWT Authentication
+  jwtAuth:
+    enabled: true
+    keyClaimName: iss
+    maximumExpiration: 3600
+
+  # CORS para query-api
+  corsApi:
+    enabled: true
+    origins:
+      - "*"
+    methods:
+      - GET
+      - POST
+      - PUT
+      - DELETE
+      - OPTIONS
+      - PATCH
+    headers:
+      - Authorization
+      - Content-Type
+      - X-Requested-With
+    maxAge: 3600
+
+  # Security Headers para dashboard/portal
+  securityHeaders:
+    enabled: true
+
+# ---------------------------------------------------------------------------
+# Ingress para rotas do tier de API (ingestor + query-api)
+# Dashboard e portal têm seus próprios Ingress nos respectivos charts.
+# ---------------------------------------------------------------------------
+routes:
+  # Rota gRPC para o ingestor
+  ingestor:
+    enabled: true
+    hostname: ""  # definido por ambiente (ex: api.aegisops.io)
+    path: /ingest
+    service: aegis-ingestor
+    port: 50051
+    tls:
       enabled: true
-      origins: "*"
-      methods: "GET,POST,OPTIONS"
-  admin:
-    enabled: false  # Disabled in production
+      secretName: ""  # cert-manager provisiona automaticamente
+    annotations:
+      konghq.com/protocol: "grpcs"
 
-tls:
-  secretName: ""
-
-networkPolicy:
-  enabled: true
-  allowDNS: true
-  ingress:
-    - ports:
-        - protocol: TCP
-          port: 443   # Proxy HTTPS
-  egress:
-    - ports:
-        - protocol: TCP
-          port: 50051  # Ingestor gRPC
-    - ports:
-        - protocol: TCP
-          port: 8080   # Query API
-
-tolerations: []
-nodeSelector: {}
-extraAnnotations: {}
+  # Rota HTTP para a query-api
+  queryApi:
+    enabled: true
+    hostname: ""  # definido por ambiente (ex: api.aegisops.io)
+    path: /api
+    service: aegis-query-api
+    port: 8080
+    tls:
+      enabled: true
+      secretName: ""  # cert-manager provisiona automaticamente
+    annotations:
+      konghq.com/protocol: "https"
+      konghq.com/strip-path: "false"

@@ -1,0 +1,56 @@
+# =============================================================================
+# aegis-kafka — Staging Environment Values
+# =============================================================================
+# 2 brokers, replication factor 2, storage médio.
+# Simula HA de produção em escala reduzida.
+# =============================================================================
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+persistence:
+  size: 50Gi
+
+kafka:
+  config:
+    logRetentionHours: 72  # 3 dias no QA
+    numPartitionsDefault: 6
+    defaultReplicationFactor: 2
+    minInsyncReplicas: 1
+    autoCreateTopicsEnable: false
+
+topics:
+  - name: raw-metrics
+    partitions: 6
+    replicationFactor: 2
+  - name: raw-logs
+    partitions: 6
+    replicationFactor: 2
+  - name: otel-traces
+    partitions: 3
+    replicationFactor: 2
+  - name: agent-heartbeats
+    partitions: 3
+    replicationFactor: 2
+  - name: security-events
+    partitions: 3
+    replicationFactor: 2
+  - name: deploy-events
+    partitions: 3
+    replicationFactor: 2
+  - name: host-inventory
+    partitions: 3
+    replicationFactor: 2
+  - name: custom-events
+    partitions: 3
+    replicationFactor: 2
+  - name: cert-inventory
+    partitions: 3
+    replicationFactor: 2

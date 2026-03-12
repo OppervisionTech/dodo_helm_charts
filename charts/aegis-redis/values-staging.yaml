@@ -1,0 +1,22 @@
+# =============================================================================
+# aegis-redis — Staging Environment Values
+# =============================================================================
+# Sem persistência (cache mode), memória moderada.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+persistence:
+  enabled: false
+
+redis:
+  config:
+    maxmemory: 128mb
+    maxmemoryPolicy: allkeys-lru
+    appendonly: "no"

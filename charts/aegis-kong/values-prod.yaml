@@ -1,0 +1,57 @@
+# =============================================================================
+# aegis-kong — Production Environment Values
+# =============================================================================
+# HPA agressivo (3-10), TLS via cert-manager (LE production).
+# Admin API NUNCA habilitada em produção.
+# Rate limiting distribuído via Redis (policy: redis).
+# =============================================================================
+
+kic:
+  gateway:
+    replicaCount: 3
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 2000m
+        memory: 2Gi
+    proxy:
+      type: LoadBalancer
+    admin:
+      enabled: false  # NUNCA habilitar admin em produção
+
+  controller:
+    replicaCount: 2  # HA para o controller em prod
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 60
+
+plugins:
+  rateLimitingIngestor:
+    minuteLimit: 1000
+    secondLimit: 100
+    policy: redis  # distribuído via Redis para rate limit consistente entre réplicas
+  rateLimitingApi:
+    minuteLimit: 500
+    secondLimit: 50
+    policy: redis
+  corsApi:
+    origins:
+      - "https://dashboard.aegisops.io"
+      - "https://portal.aegisops.io"
+
+routes:
+  ingestor:
+    hostname: "api.aegisops.io"
+    tls:
+      enabled: true
+    clusterIssuer: "letsencrypt-production"
+  queryApi:
+    hostname: "api.aegisops.io"
+    tls:
+      enabled: true
+    clusterIssuer: "letsencrypt-production"

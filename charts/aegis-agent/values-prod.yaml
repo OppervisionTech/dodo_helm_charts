@@ -1,0 +1,28 @@
+# =============================================================================
+# aegis-agent — Production Environment Values
+# =============================================================================
+# Full HA. Projetado para ~1000 agentes simultâneos.
+# Buffer persistente via hostPath, mTLS obrigatório via secretRef.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+agent:
+  collectionInterval: 30s
+  ingestorEndpoint: "aegis-ingestor:50051"
+  bufferMaxSize: 1Gi
+
+buffer:
+  type: hostPath
+  hostPath: /var/lib/aegis-agent/buffer
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 10%  # limita impacto em rolling updates de larga escala

@@ -1,0 +1,22 @@
+# =============================================================================
+# aegis-clickhouse — Staging Environment Values
+# =============================================================================
+# Storage médio, 1GB de memória para queries.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+persistence:
+  size: 50Gi
+
+clickhouse:
+  config:
+    maxMemoryUsage: 1073741824  # 1GB
+    maxThreads: 4
+  logRetentionDays: 30

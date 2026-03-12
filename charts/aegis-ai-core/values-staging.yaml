@@ -1,0 +1,32 @@
+# =============================================================================
+# aegis-ai-core — Staging Environment Values
+# =============================================================================
+# 1 réplica, GPU desabilitado, model cache médio.
+# Todas as features habilitadas para validação.
+# =============================================================================
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+gpu:
+  enabled: false
+
+modelCache:
+  size: 10Gi
+
+aiCore:
+  featureFlags:
+    anomalyDetection: true
+    ragEnabled: true
+    classificationEnabled: true
+    remediationEnabled: false  # validar antes de habilitar em prod
+  models:
+    anomalyThreshold: 0.92
+    classificationMinConfidence: 0.75

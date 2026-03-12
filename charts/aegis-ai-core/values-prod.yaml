@@ -1,0 +1,32 @@
+# =============================================================================
+# aegis-ai-core — Production Environment Values
+# =============================================================================
+# 2 réplicas, GPU pronto (habilitar quando nós GPU disponíveis).
+# Model cache 50Gi, todas as features habilitadas.
+# =============================================================================
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+
+gpu:
+  enabled: false  # Habilitar quando nós GPU disponíveis no cluster
+
+modelCache:
+  size: 50Gi
+
+aiCore:
+  featureFlags:
+    anomalyDetection: true
+    ragEnabled: true
+    classificationEnabled: true
+    remediationEnabled: true
+  models:
+    anomalyThreshold: 0.95
+    classificationMinConfidence: 0.8

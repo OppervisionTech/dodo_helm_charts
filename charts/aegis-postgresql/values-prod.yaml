@@ -1,0 +1,22 @@
+# =============================================================================
+# aegis-postgresql — Production Environment Values
+# =============================================================================
+# Storage 100Gi, configuração para CMDB + embeddings pgvector.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+persistence:
+  size: 100Gi
+
+postgresql:
+  config:
+    sharedBuffers: 1GB
+    workMem: 64MB
+    effectiveCacheSize: 3GB

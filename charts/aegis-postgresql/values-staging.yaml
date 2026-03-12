@@ -1,0 +1,22 @@
+# =============================================================================
+# aegis-postgresql — Staging Environment Values
+# =============================================================================
+# Storage médio, configuração moderada.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+
+persistence:
+  size: 20Gi
+
+postgresql:
+  config:
+    sharedBuffers: 512MB
+    workMem: 32MB
+    effectiveCacheSize: 1536MB

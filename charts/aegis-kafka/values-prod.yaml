@@ -1,0 +1,57 @@
+# =============================================================================
+# aegis-kafka — Production Environment Values
+# =============================================================================
+# 3 brokers, replication factor 3, storage 500Gi por broker.
+# Retenção de 7 dias. ISR=2 para durabilidade garantida.
+# =============================================================================
+
+replicaCount: 3
+
+resources:
+  requests:
+    cpu: 1000m
+    memory: 2Gi
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+
+persistence:
+  size: 500Gi
+
+kafka:
+  config:
+    logRetentionHours: 168  # 7 dias
+    numPartitionsDefault: 12
+    defaultReplicationFactor: 3
+    minInsyncReplicas: 2
+    autoCreateTopicsEnable: false
+    logSegmentBytes: 1073741824  # 1GB
+
+topics:
+  - name: raw-metrics
+    partitions: 12
+    replicationFactor: 3
+  - name: raw-logs
+    partitions: 12
+    replicationFactor: 3
+  - name: otel-traces
+    partitions: 6
+    replicationFactor: 3
+  - name: agent-heartbeats
+    partitions: 3
+    replicationFactor: 3
+  - name: security-events
+    partitions: 6
+    replicationFactor: 3
+  - name: deploy-events
+    partitions: 3
+    replicationFactor: 3
+  - name: host-inventory
+    partitions: 3
+    replicationFactor: 3
+  - name: custom-events
+    partitions: 6
+    replicationFactor: 3
+  - name: cert-inventory
+    partitions: 3
+    replicationFactor: 3

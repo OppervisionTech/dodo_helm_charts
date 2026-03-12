@@ -1,0 +1,82 @@
+# =============================================================================
+# Ingress para o tier de API (ingestor gRPC + query-api HTTP)
+# Gerenciado pelo Kong Ingress Controller (KIC).
+# TLS provisionado automaticamente pelo cert-manager.
+# =============================================================================
+
+{{- if .Values.routes.ingestor.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aegis.fullname" . }}-ingestor
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "grpcs"
+    konghq.com/plugins: "rate-limiting-ingestor,jwt-auth"
+    {{- if .Values.routes.ingestor.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.routes.ingestor.clusterIssuer | default "letsencrypt-production" | quote }}
+    {{- end }}
+    {{- with .Values.routes.ingestor.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: kong
+  {{- if .Values.routes.ingestor.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.routes.ingestor.hostname | quote }}
+      secretName: {{ .Values.routes.ingestor.tls.secretName | default (printf "%s-ingestor-tls" (include "aegis.fullname" .)) }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.routes.ingestor.hostname | quote }}
+      http:
+        paths:
+          - path: {{ .Values.routes.ingestor.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.routes.ingestor.service }}
+                port:
+                  number: {{ .Values.routes.ingestor.port }}
+{{- end }}
+
+{{- if .Values.routes.queryApi.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aegis.fullname" . }}-query-api
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "https"
+    konghq.com/strip-path: "false"
+    konghq.com/plugins: "rate-limiting-api,jwt-auth,cors-api"
+    {{- if .Values.routes.queryApi.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.routes.queryApi.clusterIssuer | default "letsencrypt-production" | quote }}
+    {{- end }}
+    {{- with .Values.routes.queryApi.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: kong
+  {{- if .Values.routes.queryApi.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.routes.queryApi.hostname | quote }}
+      secretName: {{ .Values.routes.queryApi.tls.secretName | default (printf "%s-query-api-tls" (include "aegis.fullname" .)) }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.routes.queryApi.hostname | quote }}
+      http:
+        paths:
+          - path: {{ .Values.routes.queryApi.path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.routes.queryApi.service }}
+                port:
+                  number: {{ .Values.routes.queryApi.port }}
+{{- end }}

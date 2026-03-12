@@ -1,0 +1,22 @@
+# =============================================================================
+# aegis-query-api — Production Environment Values
+# =============================================================================
+# HPA agressivo (3-15), recursos de produção, CORS restrito.
+# =============================================================================
+
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 15
+  targetCPUUtilizationPercentage: 60
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+queryApi:
+  corsAllowedOrigins: "https://dashboard.aegisops.io,https://portal.aegisops.io"

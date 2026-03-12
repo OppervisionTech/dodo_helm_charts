@@ -1,3 +1,4 @@
-{{- if .Values.networkPolicy.enabled }}
-{{ include "aegis.networkPolicy" . }}
-{{- end }}
+{{/*
+NetworkPolicy removida na v0.2.0.
+O subchart `kic` (kong/ingress) gerencia as network policies do gateway e controller.
+*/}}

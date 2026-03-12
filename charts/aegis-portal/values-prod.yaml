@@ -1,0 +1,33 @@
+# =============================================================================
+# aegis-portal — Production Environment Values
+# =============================================================================
+# HPA (3-10), TLS via cert-manager (LE production), ingress Kong.
+# =============================================================================
+
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+ingress:
+  className: kong
+  hostname: portal.aegisops.io
+  tls:
+    enabled: true
+    secretName: portal-prod-tls
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "301"
+    konghq.com/plugins: "portal-rate-limit,security-headers"
+
+portal:
+  queryApiUrl: "http://aegis-query-api:8080"

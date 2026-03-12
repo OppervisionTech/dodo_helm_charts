@@ -1,13 +1,4 @@
-{{- if .Values.pdb.enabled }}
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: {{ include "aegis.fullname" . }}
-  labels:
-    {{- include "aegis.labels" . | nindent 4 }}
-spec:
-  minAvailable: {{ .Values.pdb.minAvailable }}
-  selector:
-    matchLabels:
-      {{- include "aegis.selectorLabels" . | nindent 6 }}
-{{- end }}
+{{/*
+PDB removido na v0.2.0.
+PodDisruptionBudget gerenciado pelo subchart `kic` (kong/ingress).
+*/}}

@@ -1,0 +1,24 @@
+# =============================================================================
+# aegis-redis — Production Environment Values
+# =============================================================================
+# Persistência habilitada (AOF) para recuperação após restart.
+# Usado para heartbeats TTL, cache e pub/sub.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+persistence:
+  enabled: true
+  size: 20Gi
+
+redis:
+  config:
+    maxmemory: 512mb
+    maxmemoryPolicy: allkeys-lru
+    appendonly: "yes"  # AOF para recuperação

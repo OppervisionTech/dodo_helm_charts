@@ -1,0 +1,23 @@
+# =============================================================================
+# aegis-clickhouse — Production Environment Values
+# =============================================================================
+# Storage 1Ti, 4GB de memória para analytics de alta carga.
+# Logs e traces retidos por 30 dias.
+# =============================================================================
+
+resources:
+  requests:
+    cpu: 1000m
+    memory: 4Gi
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+
+persistence:
+  size: 1000Gi
+
+clickhouse:
+  config:
+    maxMemoryUsage: 4294967296  # 4GB
+    maxThreads: 8
+  logRetentionDays: 30
