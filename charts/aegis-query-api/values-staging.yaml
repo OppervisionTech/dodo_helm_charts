@@ -30,5 +30,8 @@ resources:
     cpu: 500m
     memory: 512Mi
 
+secrets:
+  dbCredentials: aegis-query-api-credentials
+
 queryApi:
   corsAllowedOrigins: "https://dashboard.staging.aegisops.io,https://portal.staging.aegisops.io"
