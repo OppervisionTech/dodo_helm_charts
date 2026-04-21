@@ -11,6 +11,9 @@ image:
   tag: "latest"
   pullPolicy: Always
 
+imagePullSecrets:
+  - name: registry-dodo-aegisops-staging
+
 replicaCount: 2
 
 hpa:
