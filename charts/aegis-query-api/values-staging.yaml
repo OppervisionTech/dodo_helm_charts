@@ -2,7 +2,14 @@
 # aegis-query-api — Staging Environment Values
 # =============================================================================
 # 2 réplicas, HPA moderado (2-5), CORS restrito aos domínios QA.
+# image.repository e image.tag são sobrescritos pelo CI (reusable-helm-deploy)
+# via --set image.repository=... --set image.tag=<sha>
 # =============================================================================
+
+image:
+  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_query_api
+  tag: "latest"
+  pullPolicy: Always
 
 replicaCount: 2
 

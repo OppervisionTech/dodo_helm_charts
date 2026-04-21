@@ -5,8 +5,8 @@ gitSha: ""
 
 image:
   repository: ghcr.io/oppervisiontech/aegis-query-api
-  tag: ""
-  pullPolicy: IfNotPresent
+  tag: "latest"
+  pullPolicy: Always
 
 replicaCount: 2
 
