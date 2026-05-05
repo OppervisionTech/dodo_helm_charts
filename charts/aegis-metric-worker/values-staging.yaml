@@ -2,6 +2,14 @@
 # aegis-metric-worker — Staging Environment Values
 # =============================================================================
 
+image:
+  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_metric_worker
+  tag: "latest"
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: registry-dodo-aegisops-staging
+
 replicaCount: 2
 
 resources:

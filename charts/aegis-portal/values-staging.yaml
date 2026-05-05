@@ -4,6 +4,14 @@
 # 2 réplicas, HPA moderado, TLS via cert-manager (LE staging), ingress Kong.
 # =============================================================================
 
+image:
+  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_portal
+  tag: "latest"
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: registry-dodo-aegisops-staging
+
 replicaCount: 2
 
 hpa:
