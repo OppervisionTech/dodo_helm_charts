@@ -50,16 +50,16 @@ containerSecurityContext:
 
 metrics:
   enabled: true
-  port: 9090
+  port: 8080  # app's METRICS_PORT (Prometheus); .env: METRICS_PORT=8080
   path: /metrics
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 8081  # app's HEALTH_PORT (probes); .env: HEALTH_PORT=8081
 
 worker:
   name: metric-worker
-  port: 8080
+  port: 8081  # health endpoint; .env: HEALTH_PORT=8081 (METRICS lives on 8080)
 
 # Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
 # DB endpoints (host/port/password) vêm do Secret "dodo-db-credentials" do cluster
