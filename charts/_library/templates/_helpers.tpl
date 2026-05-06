@@ -357,3 +357,61 @@ Parameters (via .Values.image):
 image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
 imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
 {{- end }}
+
+{{/*
+----------------------------------------------------------------------
+aegis.dbCredsEnv — Env entries sourced from the cluster's shared
+`dodo-db-credentials` Secret, providing host/port/password components
+for one or more backends. Apps then compose full DSNs using $(VAR)
+substitution at pod start.
+
+Caller passes a dict { components: [tsdb|pg|clickhouse|redis|kafka ...],
+secretName: dodo-db-credentials (default) }. Falls back to the cluster
+default name when secretName is not provided.
+
+Example:
+  env:
+    {{- include "aegis.dbCredsEnv" (dict "components" (list "pg" "redis")) | nindent 12 }}
+    - name: DODO_DATABASE_URL
+      value: "postgresql://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_ai_core"
+----------------------------------------------------------------------
+*/}}
+{{- define "aegis.dbCredsEnv" -}}
+{{- $secret := .secretName | default "dodo-db-credentials" -}}
+{{- range .components }}
+  {{- if eq . "tsdb" }}
+- name: TSDB_HOST
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: tsdb-host } }
+- name: TSDB_PORT
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: tsdb-port } }
+- name: TSDB_PASSWORD
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: tsdb-password } }
+  {{- else if eq . "pg" }}
+- name: PG_HOST
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: pg-host } }
+- name: PG_PORT
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: pg-port } }
+- name: PG_PASSWORD
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: pg-password } }
+  {{- else if eq . "clickhouse" }}
+- name: CLICKHOUSE_HOST
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-host } }
+- name: CLICKHOUSE_HTTP_PORT
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-http-port } }
+- name: CLICKHOUSE_NATIVE_PORT
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-native-port } }
+- name: CLICKHOUSE_PASSWORD
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-password } }
+  {{- else if eq . "redis" }}
+- name: REDIS_HOST
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: redis-host } }
+- name: REDIS_PORT
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: redis-port } }
+- name: REDIS_PASSWORD
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: redis-password } }
+  {{- else if eq . "kafka" }}
+- name: KAFKA_BOOTSTRAP
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: kafka-bootstrap } }
+  {{- end }}
+{{- end }}
+{{- end }}
