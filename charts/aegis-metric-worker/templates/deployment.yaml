@@ -20,6 +20,10 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "aegis.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- include "aegis.podSecurityContext" . | nindent 6 }}
       {{- with .Values.tolerations }}
       tolerations:
@@ -42,20 +46,28 @@ spec:
           {{- include "aegis.healthCheck" . | nindent 10 }}
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
-          {{- if .Values.secrets.credentials }}
+          env:
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "redis" "kafka")) | nindent 12 }}
+            - name: TIMESCALEDB_DSN
+              value: "postgres://dodo:$(TSDB_PASSWORD)@$(TSDB_HOST):$(TSDB_PORT)/dodo_metrics?sslmode=disable"
+            - name: KAFKA_BROKERS
+              value: "$(KAFKA_BOOTSTRAP)"
+            - name: REDIS_ADDR
+              value: "$(REDIS_HOST):$(REDIS_PORT)"
           envFrom:
+            - configMapRef:
+                name: {{ include "aegis.fullname" . }}
+            {{- if .Values.secrets.appCredentials }}
+            - secretRef:
+                name: {{ .Values.secrets.appCredentials }}
+            {{- end }}
+            {{- if .Values.secrets.credentials }}
             - secretRef:
                 name: {{ .Values.secrets.credentials }}
-          {{- end }}
+            {{- end }}
           volumeMounts:
-            - name: config
-              mountPath: /etc/aegis-worker
-              readOnly: true
             - name: tmp
               mountPath: /tmp
       volumes:
-        - name: config
-          configMap:
-            name: {{ include "aegis.fullname" . }}
         - name: tmp
           emptyDir: {}

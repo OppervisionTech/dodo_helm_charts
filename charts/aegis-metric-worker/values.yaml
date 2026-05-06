@@ -58,14 +58,31 @@ service:
   port: 8080
 
 worker:
+  name: metric-worker
   port: 8080
-  kafkaTopic: raw-metrics
-  consumerGroup: aegis-metric-worker
-  kafkaBrokers: "aegis-kafka:9092"
-  timescaledbConnection: "host=aegis-timescaledb port=5432 dbname=aegisops"
-  redisConnection: "aegis-redis:6379"
+
+# Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
+# DB endpoints (host/port/password) vêm do Secret "dodo-db-credentials" do cluster
+# via valueFrom.secretKeyRef no deployment.yaml.
+env:
+  KAFKA_TOPICS: raw-metrics
+  KAFKA_GROUP_ID: metric-worker-group
+  KAFKA_MAX_RETRIES: "3"
+  KAFKA_DLQ_ENABLED: "true"
+  WORKER_CONCURRENCY: "1"
+  HEALTH_PORT: "8081"
+  METRICS_PORT: "8080"
+  SHUTDOWN_TIMEOUT: 30s
+  LOG_LEVEL: info
+  AUTO_MIGRATE: "true"
+  BATCH_SIZE: "5000"
+  FLUSH_INTERVAL: 1s
+  LIVE_PUBLISH_ENABLED: "true"
+  LIVE_PUBLISH_BUFFER_SIZE: "10000"
+  LIVE_PUBLISH_RATE_LIMIT: "0"
 
 secrets:
+  appCredentials: ""
   credentials: ""
 
 networkPolicy:

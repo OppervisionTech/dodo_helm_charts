@@ -5,11 +5,12 @@ metadata:
   labels:
     {{- include "aegis.labels" . | nindent 4 }}
 data:
-  config.yaml: |
-    pgvector_endpoint: {{ .Values.aiCore.pgvectorEndpoint | quote }}
-    clickhouse_endpoint: {{ .Values.aiCore.clickhouseEndpoint | quote }}
-    redis_endpoint: {{ .Values.aiCore.redisEndpoint | quote }}
-    models:
-      anomaly_threshold: {{ .Values.aiCore.models.anomalyThreshold }}
-      classification_min_confidence: {{ .Values.aiCore.models.classificationMinConfidence }}
-    model_cache_path: {{ .Values.modelCache.mountPath | quote }}
+  DODO_API_PORT: {{ .Values.aiCore.port | quote }}
+  DODO_MODELS_PATH: {{ .Values.modelCache.mountPath | quote }}
+  ANOMALY_DETECTION_ENABLED: {{ .Values.featureFlags.anomalyDetection | quote }}
+  RAG_ENABLED: {{ .Values.featureFlags.ragEnabled | quote }}
+  CLASSIFICATION_ENABLED: {{ .Values.featureFlags.classificationEnabled | quote }}
+  REMEDIATION_ENABLED: {{ .Values.featureFlags.remediationEnabled | quote }}
+  {{- range $k, $v := .Values.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}

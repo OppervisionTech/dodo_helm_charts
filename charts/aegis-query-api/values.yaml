@@ -80,14 +80,53 @@ affinity:
 
 queryApi:
   port: 8080
-  timescaledbConnection: "host=aegis-timescaledb port=5432 dbname=aegisops"
-  clickhouseConnection: "tcp://aegis-clickhouse:9000/aegisops"
-  postgresqlConnection: "host=aegis-postgresql port=5432 dbname=aegisops"
-  redisConnection: "aegis-redis:6379"
-  corsAllowedOrigins: "*"
-  graphqlSchemaPath: /etc/aegis-query-api/schema.graphql
 
+# Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
+# DB endpoints (tsdb, pg, clickhouse, redis) vêm do Secret "dodo-db-credentials"
+# do cluster via valueFrom.secretKeyRef no deployment.yaml.
+env:
+  DODO_QUERY_READ_TIMEOUT: 30s
+  DODO_QUERY_WRITE_TIMEOUT: 30s
+  DODO_QUERY_SHUTDOWN_TIMEOUT: 30s
+  DODO_QUERY_GRAPHQL_MAX_DEPTH: "10"
+  DODO_QUERY_GRAPHQL_MAX_COMPLEXITY: "1000"
+  DODO_QUERY_GRAPHQL_PLAYGROUND_ENABLED: "false"
+  DODO_QUERY_WS_MAX_CONNECTIONS: "10000"
+  DODO_QUERY_WS_PING_INTERVAL: 30s
+  DODO_QUERY_WS_PONG_TIMEOUT: 10s
+  DODO_QUERY_TIMESCALEDB_MAX_OPEN_CONNS: "25"
+  DODO_QUERY_TIMESCALEDB_MAX_IDLE_CONNS: "10"
+  DODO_QUERY_TIMESCALEDB_CONN_MAX_LIFETIME: 5m
+  DODO_QUERY_CLICKHOUSE_MAX_OPEN_CONNS: "10"
+  DODO_QUERY_CLICKHOUSE_MAX_IDLE_CONNS: "5"
+  DODO_QUERY_POSTGRESQL_MAX_OPEN_CONNS: "25"
+  DODO_QUERY_POSTGRESQL_MAX_IDLE_CONNS: "10"
+  DODO_QUERY_POSTGRESQL_CONN_MAX_LIFETIME: 5m
+  DODO_QUERY_REDIS_DB: "0"
+  DODO_QUERY_REDIS_POOL_SIZE: "20"
+  DODO_QUERY_REDIS_MIN_IDLE_CONNS: "5"
+  DODO_QUERY_JWT_PUBLIC_KEY_PATH: /etc/aegis-query-api/certs/jwt-public.pem
+  DODO_QUERY_JWT_ISSUER: dodo_portal
+  DODO_QUERY_JWT_AUDIENCE: dodo_query_api
+  DODO_QUERY_RATELIMIT_ENABLED: "true"
+  DODO_QUERY_RATELIMIT_REQUESTS_PER_SECOND: "100"
+  DODO_QUERY_RATELIMIT_BURST_SIZE: "200"
+  DODO_QUERY_CACHE_DEFAULT_TTL: 30s
+  DODO_QUERY_CACHE_METRICS_TTL: 0s
+  DODO_QUERY_CACHE_TOPOLOGY_TTL: 30s
+  DODO_QUERY_LOG_LEVEL: info
+  DODO_QUERY_LOG_FORMAT: json
+  DODO_QUERY_CORS_ALLOWED_ORIGINS: "*"
+  DODO_AI_CORE_URL: http://aegis-ai-core:8080
+
+# Secrets externos referenciados por nome (não criados pelo chart).
+#   appCredentials — Secret com env vars adicionais (vazio em staging atual).
+#   jwtPubkey      — Secret contendo `jwt-public.pem` (volume-mounted como arquivo).
+#                    Pipeline do repo dodo_query_api cria/atualiza com a chave pública JWT.
+#   dbCredentials  — pattern legacy mantido para forward-compat.
 secrets:
+  appCredentials: ""
+  jwtPubkey: ""
   dbCredentials: ""
 
 networkPolicy:

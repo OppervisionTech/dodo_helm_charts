@@ -1,0 +1,97 @@
+nameOverride: ""
+fullnameOverride: ""
+component: alerts
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-alerts
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 10
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: true
+  port: 9090
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8084
+
+worker:
+  name: alerts-worker
+  port: 8084
+
+# Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
+# DB endpoints (pg + redis + kafka) vêm do Secret "dodo-db-credentials" do cluster
+# via valueFrom.secretKeyRef no deployment.yaml.
+env:
+  KAFKA_TOPIC: alert-events
+  KAFKA_GROUP_ID: alert-worker-group
+  HTTP_ADDR: ":8084"
+  LOG_LEVEL: info
+
+secrets:
+  appCredentials: ""
+  credentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8084
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 9092
+    - ports:
+        - protocol: TCP
+          port: 5433
+    - ports:
+        - protocol: TCP
+          port: 6379
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

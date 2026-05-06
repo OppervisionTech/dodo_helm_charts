@@ -78,9 +78,28 @@ ingress:
 
 portal:
   port: 3000
-  queryApiUrl: "http://aegis-query-api:8080"
-  featureFlags: {}
-  analyticsConfig: {}
+  # Supabase public values — publishable key é exposta por design no client.
+  # Ficam aqui (não em secrets) porque NÃO são segredos e precisam estar no ConfigMap.
+  supabase:
+    projectUrl: ""
+    publishableKey: ""
+
+# Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
+# Atenção Next.js: NEXT_PUBLIC_* aqui só atendem o SSR / API routes do Node.
+# O bundle JS do client foi inlinado em build time pelo Dockerfile do dodo_portal —
+# o repo `dodo_portal` precisa publicar imagem com os build-args corretos para staging
+# (ARG NEXT_PUBLIC_*). Override aqui sozinho NÃO atualiza o bundle do browser.
+env:
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  ALLOWED_ORIGINS: http://localhost:3000
+  NEXT_PUBLIC_API_URL: http://localhost:4000
+  PORTAL_QUERY_API_URL: http://aegis-query-api:8080
+
+# Secrets externos referenciados por nome (não criados pelo chart).
+#   appCredentials — Secret com SUPABASE_SERVICE_ROLE_KEY, STRIPE_*, DATABASE_URL.
+#                    Pipeline do repo dodo_portal cria/atualiza este Secret.
+secrets:
+  appCredentials: ""
 
 networkPolicy:
   enabled: true

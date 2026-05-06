@@ -1,9 +1,19 @@
 # =============================================================================
 # aegis-ai-core — Staging Environment Values
 # =============================================================================
-# 1 réplica, GPU desabilitado, model cache médio.
-# Todas as features habilitadas para validação.
+# Pré-requisitos no cluster antes do helm install:
+#   1. Secret "dodo-db-credentials" no namespace alvo (DB host/port/password)
+#   2. Secret "aegis-ai-core-app-secrets" com DODO_LLM_API_KEY + DODO_CLAUDE_API_KEY
+#      (Anthropic API key — criado pelo pipeline do repo dodo_ai_core)
 # =============================================================================
+
+image:
+  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_ai_core
+  tag: "latest"
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: registry-dodo-aegisops-staging
 
 replicaCount: 1
 
@@ -21,12 +31,14 @@ gpu:
 modelCache:
   size: 10Gi
 
-aiCore:
-  featureFlags:
-    anomalyDetection: true
-    ragEnabled: true
-    classificationEnabled: true
-    remediationEnabled: false  # validar antes de habilitar em prod
-  models:
-    anomalyThreshold: 0.92
-    classificationMinConfidence: 0.75
+env:
+  DODO_ENVIRONMENT: staging
+
+featureFlags:
+  anomalyDetection: true
+  ragEnabled: true
+  classificationEnabled: true
+  remediationEnabled: false
+
+secrets:
+  appCredentials: aegis-ai-core-app-secrets

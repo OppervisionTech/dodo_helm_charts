@@ -4,6 +4,14 @@
 # 2 réplicas, HPA moderado (2-5), recursos intermediários.
 # =============================================================================
 
+image:
+  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_ingestor
+  tag: "latest"
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: registry-dodo-aegisops-staging
+
 replicaCount: 2
 
 hpa:

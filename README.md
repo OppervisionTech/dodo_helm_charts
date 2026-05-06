@@ -21,6 +21,7 @@ charts/                  # One directory per chart
   aegis-log-worker/      # Log Worker Deployment
   aegis-health-monitor/  # Health Monitor Deployment
   aegis-otel-worker/     # OTEL Worker Deployment
+  aegis-alerts/          # Alerts Worker Deployment
   aegis-dashboard/       # Dashboard Deployment + Ingress
   aegis-portal/          # Portal Deployment + Ingress
   aegis-kong/            # Kong API Gateway
@@ -66,6 +67,69 @@ helm install aegis-agent charts/aegis-agent -f values/values-dev.yaml -n aegisop
 5. Create `values.yaml` with defaults
 6. Add tests in `charts/<chart-name>/tests/`
 7. Run `make lint CHART=<chart-name>` to validate
+
+## Staging deployment
+
+Staging usa o cluster DOKS para apps e um droplet Docker (mesma VPC DigitalOcean) para a infra (Postgres, TimescaleDB, ClickHouse, Kafka, Redis). Charts de infra (`aegis-postgresql`, `aegis-clickhouse`, `aegis-kafka`, `aegis-redis`, `aegis-timescaledb`) **não devem ser instalados em staging** — substituídos pelo droplet.
+
+### Cluster pré-requisitos
+
+Cada namespace alvo precisa do Secret compartilhado **`dodo-db-credentials`** com 14 chaves:
+
+```
+tsdb-host, tsdb-port, tsdb-password
+pg-host, pg-port, pg-password
+clickhouse-host, clickhouse-http-port, clickhouse-native-port, clickhouse-password
+redis-host, redis-port, redis-password
+kafka-bootstrap
+```
+
+Esse Secret é provisionado fora destes charts (manualmente ou via outro pipeline) e referenciado por todos os charts via `valueFrom.secretKeyRef`. Ver helper `aegis.dbCredsEnv` em `charts/_library/templates/_helpers.tpl`.
+
+### Padrão de deploy
+
+Pipeline de cada repo de aplicação roda algo como:
+
+```bash
+helm upgrade --install aegis-<svc> charts/aegis-<svc> \
+  -f charts/aegis-<svc>/values-staging.yaml \
+  --set image.tag=<sha> \
+  -n dodo
+```
+
+Os charts compõem as DSNs (postgres://...) em runtime usando `$(VAR)` substitution do Kubernetes a partir das variáveis de ambiente que vêm do `dodo-db-credentials`. O chart **não** cria Secrets de DB — apenas os referencia.
+
+### Secrets adicionais por aplicação
+
+Apps que precisam de credenciais não-DB (Anthropic, Stripe, Supabase, JWT pubkey) consomem um Secret próprio criado pelo pipeline do repo da aplicação:
+
+| App | Secret name (default em values-staging.yaml) | Conteúdo esperado |
+|---|---|---|
+| `aegis-ai-core` | `aegis-ai-core-app-secrets` | `DODO_LLM_API_KEY`, `DODO_CLAUDE_API_KEY` |
+| `aegis-portal` | `aegis-portal-app-secrets` | `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_*`, `DATABASE_URL` |
+| `aegis-query-api` | `aegis-query-api-jwt` | key `jwt-public.pem` (PEM bytes — montado como arquivo) |
+| `aegis-alerts`, `aegis-metric-worker`, `aegis-otel-worker` | — | (sem segredos não-DB) |
+
+Pipeline cria via, ex.:
+
+```bash
+kubectl -n dodo create secret generic aegis-ai-core-app-secrets \
+  --from-literal=DODO_LLM_API_KEY="$ANTHROPIC_KEY" \
+  --from-literal=DODO_CLAUDE_API_KEY="$ANTHROPIC_KEY"
+```
+
+```bash
+kubectl -n dodo create secret generic aegis-query-api-jwt \
+  --from-file=jwt-public.pem=/path/to/jwt-public.pem
+```
+
+### Charts cobertos por staging
+
+`aegis-ai-core`, `aegis-alerts`, `aegis-metric-worker`, `aegis-otel-worker`, `aegis-portal`, `aegis-query-api`.
+
+### Limitação Next.js (aegis-portal)
+
+`NEXT_PUBLIC_*` configuradas no `values-staging.yaml` valem **apenas para SSR/API routes do Node**. O bundle JS do client foi inlinado em build time pelo Dockerfile de `dodo_portal` — a imagem em `registry.digitalocean.com/dodo-aegisops-staging/dodo_portal` precisa ser publicada com `ARG NEXT_PUBLIC_API_URL=https://api.staging.aegisops.io` etc. Override no Helm sozinho não atualiza o JS do browser.
 
 ## Conventions
 

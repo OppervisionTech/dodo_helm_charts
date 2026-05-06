@@ -5,7 +5,9 @@ metadata:
   labels:
     {{- include "aegis.labels" . | nindent 4 }}
 data:
-  config.json: |
-    {
-      "queryApiUrl": {{ .Values.portal.queryApiUrl | quote }}
-    }
+  PORT: {{ .Values.portal.port | quote }}
+  NEXT_PUBLIC_SUPABASE_URL: {{ .Values.portal.supabase.projectUrl | quote }}
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: {{ .Values.portal.supabase.publishableKey | quote }}
+  {{- range $k, $v := .Values.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
