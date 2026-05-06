@@ -111,7 +111,13 @@ networkPolicy:
   egress:
     - ports:
         - protocol: TCP
-          port: 8080  # query-api
+          port: 8080  # query-api (in-cluster)
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis (droplet)
+    - ports:
+        - protocol: TCP
+          port: 443   # Supabase + Stripe (external HTTPS)
 
 tolerations: []
 nodeSelector: {}

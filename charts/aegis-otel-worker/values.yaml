@@ -97,6 +97,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 8123  # ClickHouse HTTP
+    - ports:
+        - protocol: TCP
+          port: 5433  # pgvector (topology)
 
 tolerations: []
 nodeSelector: {}

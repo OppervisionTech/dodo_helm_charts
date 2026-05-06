@@ -172,19 +172,13 @@ networkPolicy:
   egress:
     - ports:
         - protocol: TCP
-          port: 5432  # PostgreSQL/pgvector
-    - ports:
-        - protocol: TCP
-          port: 9000  # ClickHouse native
-    - ports:
-        - protocol: TCP
-          port: 8123  # ClickHouse HTTP
+          port: 5433  # pgvector
     - ports:
         - protocol: TCP
           port: 6379  # Redis
     - ports:
         - protocol: TCP
-          port: 443   # LLM APIs (external)
+          port: 443   # LLM APIs (Anthropic, external)
 
 tolerations: []
 nodeSelector: {}
