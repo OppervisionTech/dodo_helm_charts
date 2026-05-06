@@ -5,10 +5,7 @@ metadata:
   labels:
     {{- include "aegis.labels" . | nindent 4 }}
 data:
-  config.yaml: |
-    timescaledb_connection: {{ .Values.queryApi.timescaledbConnection | quote }}
-    clickhouse_connection: {{ .Values.queryApi.clickhouseConnection | quote }}
-    postgresql_connection: {{ .Values.queryApi.postgresqlConnection | quote }}
-    redis_connection: {{ .Values.queryApi.redisConnection | quote }}
-    cors_allowed_origins: {{ .Values.queryApi.corsAllowedOrigins | quote }}
-    graphql_schema_path: {{ .Values.queryApi.graphqlSchemaPath | quote }}
+  DODO_QUERY_HTTP_PORT: {{ .Values.queryApi.port | quote }}
+  {{- range $k, $v := .Values.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}

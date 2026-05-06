@@ -76,23 +76,27 @@ spec:
           {{- end }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
-            - name: ANOMALY_DETECTION_ENABLED
-              value: {{ .Values.aiCore.featureFlags.anomalyDetection | quote }}
-            - name: RAG_ENABLED
-              value: {{ .Values.aiCore.featureFlags.ragEnabled | quote }}
-            - name: CLASSIFICATION_ENABLED
-              value: {{ .Values.aiCore.featureFlags.classificationEnabled | quote }}
-            - name: REMEDIATION_ENABLED
-              value: {{ .Values.aiCore.featureFlags.remediationEnabled | quote }}
-          {{- if .Values.secrets.llmApiKeys }}
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "pg" "redis")) | nindent 12 }}
+            - name: DODO_DATABASE_URL
+              value: "postgresql://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_ai_core"
+            - name: DODO_REDIS_URL
+              value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/0"
           envFrom:
+            - configMapRef:
+                name: {{ include "aegis.fullname" . }}
+            {{- if .Values.secrets.appCredentials }}
+            - secretRef:
+                name: {{ .Values.secrets.appCredentials }}
+            {{- end }}
+            {{- if .Values.secrets.llmApiKeys }}
             - secretRef:
                 name: {{ .Values.secrets.llmApiKeys }}
-          {{- end }}
+            {{- end }}
+            {{- if .Values.secrets.dbCredentials }}
+            - secretRef:
+                name: {{ .Values.secrets.dbCredentials }}
+            {{- end }}
           volumeMounts:
-            - name: config
-              mountPath: /etc/aegis-ai-core
-              readOnly: true
             {{- if .Values.modelCache.enabled }}
             - name: model-cache
               mountPath: {{ .Values.modelCache.mountPath }}
@@ -100,9 +104,6 @@ spec:
             - name: tmp
               mountPath: /tmp
       volumes:
-        - name: config
-          configMap:
-            name: {{ include "aegis.fullname" . }}
         {{- if .Values.modelCache.enabled }}
         - name: model-cache
           persistentVolumeClaim:

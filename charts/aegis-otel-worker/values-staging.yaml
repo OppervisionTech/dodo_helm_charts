@@ -1,6 +1,9 @@
 # =============================================================================
 # aegis-otel-worker — Staging Environment Values
 # =============================================================================
+# Pré-requisito: Secret "dodo-db-credentials" presente no namespace alvo
+# (provisionado fora deste chart, contém host/port/password de cada banco).
+# =============================================================================
 
 image:
   repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_otel_worker

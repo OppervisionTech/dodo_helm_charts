@@ -1,9 +1,11 @@
 # =============================================================================
 # aegis-query-api — Staging Environment Values
 # =============================================================================
-# 2 réplicas, HPA moderado (2-5), CORS restrito aos domínios QA.
-# image.repository e image.tag são sobrescritos pelo CI (reusable-helm-deploy)
-# via --set image.repository=... --set image.tag=<sha>
+# Pré-requisitos no cluster antes do helm install:
+#   1. Secret "dodo-db-credentials" no namespace alvo (DB host/port/password)
+#   2. Secret "aegis-query-api-jwt" com key `jwt-public.pem` contendo a chave
+#      pública JWT em PEM (pipeline do repo dodo_query_api cria via
+#      `kubectl create secret generic aegis-query-api-jwt --from-file=jwt-public.pem=...`)
 # =============================================================================
 
 image:
@@ -30,8 +32,8 @@ resources:
     cpu: 500m
     memory: 512Mi
 
-secrets:
-  dbCredentials: aegis-query-api-credentials
+env:
+  DODO_QUERY_CORS_ALLOWED_ORIGINS: "https://dashboard.staging.aegisops.io,https://portal.staging.aegisops.io"
 
-queryApi:
-  corsAllowedOrigins: "https://dashboard.staging.aegisops.io,https://portal.staging.aegisops.io"
+secrets:
+  jwtPubkey: aegis-query-api-jwt

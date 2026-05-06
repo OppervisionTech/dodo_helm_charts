@@ -1,6 +1,8 @@
 # =============================================================================
 # aegis-metric-worker — Staging Environment Values
 # =============================================================================
+# Pré-requisito: Secret "dodo-db-credentials" presente no namespace alvo.
+# =============================================================================
 
 image:
   repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_metric_worker

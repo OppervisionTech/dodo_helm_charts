@@ -1,7 +1,15 @@
 # =============================================================================
 # aegis-portal — Staging Environment Values
 # =============================================================================
-# 2 réplicas, HPA moderado, TLS via cert-manager (LE staging), ingress Kong.
+# Portal Next.js: NEXT_PUBLIC_* aqui valem para SSR/API routes. O bundle JS
+# do client foi inlinado em build time pelo Dockerfile do dodo_portal —
+# certifique-se que a imagem em registry.digitalocean.com foi buildada com
+# build-args ARG NEXT_PUBLIC_API_URL=https://api.staging.aegisops.io etc.
+#
+# Pré-requisitos no cluster antes do helm install:
+#   1. Secret "dodo-db-credentials" no namespace alvo (Redis host/port/password)
+#   2. Secret "aegis-portal-app-secrets" com SUPABASE_SERVICE_ROLE_KEY, STRIPE_*,
+#      DATABASE_URL (pipeline do repo dodo_portal cria/atualiza)
 # =============================================================================
 
 image:
@@ -32,11 +40,26 @@ ingress:
   hostname: portal.staging.aegisops.io
   tls:
     enabled: true
-    secretName: portal-qa-tls
+    secretName: portal-staging-tls
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-staging
     konghq.com/protocols: "https"
     konghq.com/https-redirect-status-code: "301"
 
+env:
+  NEXT_PUBLIC_APP_URL: https://portal.staging.aegisops.io
+  ALLOWED_ORIGINS: https://portal.staging.aegisops.io
+  NEXT_PUBLIC_API_URL: https://api.staging.aegisops.io
+  PORTAL_QUERY_API_URL: http://aegis-query-api:8080
+
+# Os valores reais Supabase project URL e publishable key vêm do pipeline do
+# repo dodo_portal (`--set portal.supabase.projectUrl=...`). Defaults vazios
+# em values.yaml. Configurando aqui ficam visíveis no Git — só os valores
+# explicitamente públicos (publishable, project URL) podem ficar.
 portal:
-  queryApiUrl: "http://aegis-query-api:8080"
+  supabase:
+    projectUrl: ""
+    publishableKey: ""
+
+secrets:
+  appCredentials: aegis-portal-app-secrets

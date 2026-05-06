@@ -58,14 +58,29 @@ service:
   port: 8080
 
 worker:
+  name: otel-worker
   port: 8080
-  kafkaTopic: otel-traces
-  consumerGroup: aegis-otel-worker
-  kafkaBrokers: "aegis-kafka:9092"
-  clickhouseConnection: "tcp://aegis-clickhouse:9000/aegisops"
-  topologyExtractionEnabled: true
 
+# Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
+# DB endpoints (host/port/password) vêm do Secret "dodo-db-credentials" do cluster
+# via valueFrom.secretKeyRef no deployment.yaml.
+env:
+  KAFKA_TOPICS: otel-traces
+  KAFKA_GROUP_ID: otel-worker-group
+  CLICKHOUSE_DB: dodo_logs
+  LOG_LEVEL: info
+  METRICS_PORT: "9090"
+  HEALTH_PORT: "8080"
+  CH_BATCH_SIZE: "5000"
+  CH_FLUSH_INTERVAL: 5s
+
+# Secrets externos referenciados por nome (não criados pelo chart).
+#   appCredentials — segredos específicos da app (vazio para otel-worker).
+#   credentials    — pattern legacy mantido para forward-compat.
+# O Secret "dodo-db-credentials" do cluster é referenciado diretamente pelo
+# deployment via valueFrom.secretKeyRef (ver helper aegis.dbCredsEnv).
 secrets:
+  appCredentials: ""
   credentials: ""
 
 networkPolicy:

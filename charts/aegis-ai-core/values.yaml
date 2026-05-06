@@ -99,20 +99,65 @@ modelCache:
 # AI Core configuration
 aiCore:
   port: 8080
-  pgvectorEndpoint: "aegis-postgresql:5432"
-  clickhouseEndpoint: "aegis-clickhouse:9000"
-  redisEndpoint: "aegis-redis:6379"
-  featureFlags:
-    anomalyDetection: true
-    ragEnabled: true
-    classificationEnabled: true
-    remediationEnabled: false
-  models:
-    anomalyThreshold: 0.95
-    classificationMinConfidence: 0.8
 
-# Secret reference for LLM API keys
+# Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
+# DB endpoints (pg + redis) vêm do Secret "dodo-db-credentials" do cluster
+# via valueFrom.secretKeyRef no deployment.yaml.
+env:
+  DODO_ENVIRONMENT: development
+  DODO_LOG_LEVEL: INFO
+  DODO_API_HOST: 0.0.0.0
+  DODO_DB_POOL_MIN: "2"
+  DODO_DB_POOL_MAX: "10"
+  DODO_EMBEDDING_CACHE_TTL: "3600"
+  DODO_LLM_PROVIDER: anthropic
+  DODO_LLM_MODEL: claude-sonnet-4-6
+  DODO_LLM_API_BASE: ""
+  DODO_CLAUDE_MODEL: claude-sonnet-4-6
+  DODO_CLAUDE_MAX_TOKENS: "4096"
+  DODO_CLAUDE_TEMPERATURE: "0.2"
+  DODO_CLAUDE_TIMEOUT: "60"
+  DODO_CLAUDE_MAX_RETRIES: "3"
+  DODO_CLAUDE_RATE_LIMIT_PER_MIN: "30"
+  DODO_CB_FAILURE_THRESHOLD: "5"
+  DODO_CB_RECOVERY_TIMEOUT: "300"
+  DODO_EMBEDDING_DIMENSION: "1536"
+  DODO_EMBEDDING_MODEL: text-embedding-3-small
+  DODO_CHUNK_MAX_TOKENS: "2000"
+  DODO_CHUNK_OVERLAP_TOKENS: "200"
+  DODO_SIMILARITY_THRESHOLD: "0.7"
+  DODO_SIMILARITY_TOP_K: "5"
+  DODO_SIMILARITY_TIMEOUT: "5"
+  DODO_POLICY_EVAL_TIMEOUT: "5.0"
+  DODO_RISK_WEIGHT_BLAST_RADIUS: "0.30"
+  DODO_RISK_WEIGHT_REVERSIBILITY: "0.25"
+  DODO_RISK_WEIGHT_EFFICACY: "0.20"
+  DODO_RISK_WEIGHT_CONFIDENCE: "0.15"
+  DODO_RISK_WEIGHT_SLO_URGENCY: "0.10"
+  DODO_RL_EXPLORATION_RATE: "0.3"
+  DODO_RL_MIN_EXPLORATION_RATE: "0.05"
+  DODO_RL_EXPLORATION_DECAY: "0.01"
+  DODO_RETRAIN_IF_INTERVAL_HOURS: "24"
+  DODO_RETRAIN_XGB_INTERVAL_HOURS: "48"
+  DODO_RETRAIN_EMB_INTERVAL_HOURS: "12"
+  DODO_FEEDBACK_DIAGNOSIS_THRESHOLD: "0.7"
+  DODO_FEEDBACK_REMEDIATION_THRESHOLD: "0.8"
+  DODO_FEEDBACK_ADJUSTMENT_STEP: "0.02"
+  DODO_PROMPT_GUARD_ALERT_THRESHOLD: "5"
+  DODO_PROMPT_GUARD_ALERT_WINDOW_SECONDS: "3600.0"
+
+featureFlags:
+  anomalyDetection: true
+  ragEnabled: true
+  classificationEnabled: true
+  remediationEnabled: false
+
+# Secrets externos referenciados por nome (não criados pelo chart).
+#   appCredentials — Secret com DODO_LLM_API_KEY / DODO_CLAUDE_API_KEY (Anthropic).
+#                    Pipeline de cada deploy cria/atualiza este Secret.
+#   llmApiKeys / dbCredentials / certificates — patterns legacy mantidos.
 secrets:
+  appCredentials: ""
   llmApiKeys: ""
   dbCredentials: ""
   certificates: ""

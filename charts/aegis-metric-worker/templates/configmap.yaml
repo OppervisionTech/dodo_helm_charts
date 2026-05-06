@@ -5,9 +5,7 @@ metadata:
   labels:
     {{- include "aegis.labels" . | nindent 4 }}
 data:
-  config.yaml: |
-    kafka_topic: {{ .Values.worker.kafkaTopic | quote }}
-    consumer_group: {{ .Values.worker.consumerGroup | quote }}
-    kafka_brokers: {{ .Values.worker.kafkaBrokers | quote }}
-    timescaledb_connection: {{ .Values.worker.timescaledbConnection | quote }}
-    redis_connection: {{ .Values.worker.redisConnection | quote }}
+  WORKER_NAME: {{ .Values.worker.name | quote }}
+  {{- range $k, $v := .Values.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
