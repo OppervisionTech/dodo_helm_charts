@@ -1,0 +1,6 @@
+dependencies:
+- name: aegis-library
+  repository: file://../_library
+  version: 0.1.0
+digest: sha256:1ef5df2e84d4832cb2dc7492191d2741624f5d4f76832a44f05c71365cf32dde
+generated: "2026-05-20T23:35:45.549093962-03:00"

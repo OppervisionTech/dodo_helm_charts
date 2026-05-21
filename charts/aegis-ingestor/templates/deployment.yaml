@@ -56,6 +56,14 @@ spec:
           {{- include "aegis.healthCheck" . | nindent 10 }}
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
+          env:
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "redis" "pg" "kafka")) | nindent 12 }}
+            - name: INGESTOR_REDIS_URL
+              value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)"
+            - name: INGESTOR_POSTGRES_DSN
+              value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
+            - name: INGESTOR_KAFKA_BROKERS
+              value: "$(KAFKA_BOOTSTRAP)"
           volumeMounts:
             - name: config
               mountPath: /etc/aegis-ingestor

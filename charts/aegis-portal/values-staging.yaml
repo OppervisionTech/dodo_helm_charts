@@ -58,8 +58,8 @@ env:
 # explicitamente públicos (publishable, project URL) podem ficar.
 portal:
   supabase:
-    projectUrl: ""
-    publishableKey: ""
+    projectUrl: "https://vnkhsfwxqkyvjyncmvrt.supabase.co"
+    publishableKey: "sb_publishable_5tCYIS89vr7JgrpkAK6EvQ_tj3FGUcf"
 
 secrets:
   appCredentials: aegis-portal-app-secrets

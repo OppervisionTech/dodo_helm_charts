@@ -46,6 +46,12 @@ spec:
           {{- include "aegis.healthCheck" . | nindent 10 }}
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
+          env:
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "redis" "kafka")) | nindent 12 }}
+            - name: REDIS_ADDR
+              value: "$(REDIS_HOST):$(REDIS_PORT)"
+            - name: KAFKA_BROKERS
+              value: "$(KAFKA_BOOTSTRAP)"
           {{- if .Values.secrets.credentials }}
           envFrom:
             - secretRef:
