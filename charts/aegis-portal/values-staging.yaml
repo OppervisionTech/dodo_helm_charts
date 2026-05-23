@@ -4,7 +4,7 @@
 # Portal Next.js: NEXT_PUBLIC_* aqui valem para SSR/API routes. O bundle JS
 # do client foi inlinado em build time pelo Dockerfile do dodo_portal —
 # certifique-se que a imagem em registry.digitalocean.com foi buildada com
-# build-args ARG NEXT_PUBLIC_API_URL=https://api.staging.aegisops.io etc.
+# build-args ARG NEXT_PUBLIC_API_URL=https://api.staging.oppervision.com.br etc.
 #
 # Pré-requisitos no cluster antes do helm install:
 #   1. Secret "dodo-db-credentials" no namespace alvo (Redis host/port/password)
@@ -37,7 +37,7 @@ resources:
 
 ingress:
   className: kong
-  hostname: portal.staging.aegisops.io
+  hostname: portal.staging.oppervision.com.br
   tls:
     enabled: true
     secretName: portal-staging-tls
@@ -47,9 +47,9 @@ ingress:
     konghq.com/https-redirect-status-code: "301"
 
 env:
-  NEXT_PUBLIC_APP_URL: https://portal.staging.aegisops.io
-  ALLOWED_ORIGINS: https://portal.staging.aegisops.io
-  NEXT_PUBLIC_API_URL: https://api.staging.aegisops.io
+  NEXT_PUBLIC_APP_URL: https://portal.staging.oppervision.com.br
+  ALLOWED_ORIGINS: https://portal.staging.oppervision.com.br
+  NEXT_PUBLIC_API_URL: https://api.staging.oppervision.com.br
   PORTAL_QUERY_API_URL: http://aegis-query-api:8080
 
 # Os valores reais Supabase project URL e publishable key vêm do pipeline do

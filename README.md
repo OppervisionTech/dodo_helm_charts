@@ -129,7 +129,7 @@ kubectl -n dodo create secret generic aegis-query-api-jwt \
 
 ### Limitação Next.js (aegis-portal)
 
-`NEXT_PUBLIC_*` configuradas no `values-staging.yaml` valem **apenas para SSR/API routes do Node**. O bundle JS do client foi inlinado em build time pelo Dockerfile de `dodo_portal` — a imagem em `registry.digitalocean.com/dodo-aegisops-staging/dodo_portal` precisa ser publicada com `ARG NEXT_PUBLIC_API_URL=https://api.staging.aegisops.io` etc. Override no Helm sozinho não atualiza o JS do browser.
+`NEXT_PUBLIC_*` configuradas no `values-staging.yaml` valem **apenas para SSR/API routes do Node**. O bundle JS do client foi inlinado em build time pelo Dockerfile de `dodo_portal` — a imagem em `registry.digitalocean.com/dodo-aegisops-staging/dodo_portal` precisa ser publicada com `ARG NEXT_PUBLIC_API_URL=https://api.staging.oppervision.com.br` etc. Override no Helm sozinho não atualiza o JS do browser.
 
 ## Conventions
 

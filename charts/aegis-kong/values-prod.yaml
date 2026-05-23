@@ -41,17 +41,17 @@ plugins:
     policy: redis
   corsApi:
     origins:
-      - "https://dashboard.aegisops.io"
-      - "https://portal.aegisops.io"
+      - "https://dashboard.oppervision.com.br"
+      - "https://portal.oppervision.com.br"
 
 routes:
   ingestor:
-    hostname: "api.aegisops.io"
+    hostname: "api.oppervision.com.br"
     tls:
       enabled: true
     clusterIssuer: "letsencrypt-production"
   queryApi:
-    hostname: "api.aegisops.io"
+    hostname: "api.oppervision.com.br"
     tls:
       enabled: true
     clusterIssuer: "letsencrypt-production"

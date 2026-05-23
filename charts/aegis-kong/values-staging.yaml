@@ -31,12 +31,12 @@ kic:
 
 routes:
   ingestor:
-    hostname: "api.staging.aegisops.io"
+    hostname: "api.staging.oppervision.com.br"
     tls:
       enabled: true
     clusterIssuer: "letsencrypt-staging"
   queryApi:
-    hostname: "api.staging.aegisops.io"
+    hostname: "api.staging.oppervision.com.br"
     tls:
       enabled: true
     clusterIssuer: "letsencrypt-staging"
