@@ -63,3 +63,9 @@ portal:
 
 secrets:
   appCredentials: aegis-portal-app-secrets
+
+health:
+  liveness:
+    initialDelay: 300
+  readiness:
+    initialDelay: 10
