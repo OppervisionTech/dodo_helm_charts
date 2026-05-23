@@ -117,7 +117,13 @@ networkPolicy:
           port: 6379  # Redis (droplet)
     - ports:
         - protocol: TCP
-          port: 443   # Supabase + Stripe (external HTTPS)
+          port: 443   # Supabase REST + Stripe (external HTTPS)
+    - ports:
+        - protocol: TCP
+          port: 6543  # Supabase pooler — Prisma runtime queries
+    - ports:
+        - protocol: TCP
+          port: 5432  # Supabase direct — Prisma migrations on boot
 
 tolerations: []
 nodeSelector: {}
