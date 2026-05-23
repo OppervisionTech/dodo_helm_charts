@@ -45,7 +45,7 @@ jobs:
       - name: Setup Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.14.0
+          version: v3.17.0
       - name: Helm lint all charts
         run: |
           for chart in charts/*/; do
@@ -67,12 +67,17 @@ jobs:
       - name: Setup Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.14.0
+          version: v3.17.0
       - name: Helm template (${{ matrix.env }})
         run: |
           for chart in charts/*/; do
             if [ -f "$chart/Chart.yaml" ]; then
               name=$(basename "$chart")
+              chart_type=$(grep '^type:' "$chart/Chart.yaml" 2>/dev/null | awk '{print $2}')
+              if [ "$chart_type" = "library" ]; then
+                echo "--- Skipping library chart: $name ---"
+                continue
+              fi
               echo "--- Templating $name (${{ matrix.env }}) ---"
               helm dependency build "$chart" 2>/dev/null || true
               if [ -f "values/values-${{ matrix.env }}.yaml" ]; then
@@ -91,7 +96,7 @@ jobs:
       - name: Setup Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.14.0
+          version: v3.17.0
       - name: Install helm-unittest
         run: helm plugin install https://github.com/helm-unittest/helm-unittest
       - name: Run unit tests
@@ -112,7 +117,7 @@ jobs:
       - name: Setup Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.14.0
+          version: v3.17.0
       - name: Install kubesec
         run: |
           curl -sSL https://github.com/controlplaneio/kubesec/releases/download/v2.14.0/kubesec_linux_amd64.tar.gz | tar xz
@@ -122,6 +127,10 @@ jobs:
           for chart in charts/*/; do
             if [ -f "$chart/Chart.yaml" ]; then
               name=$(basename "$chart")
+              chart_type=$(grep '^type:' "$chart/Chart.yaml" 2>/dev/null | awk '{print $2}')
+              if [ "$chart_type" = "library" ]; then
+                continue
+              fi
               echo "--- Scanning $name ---"
               helm dependency build "$chart" 2>/dev/null || true
               helm template "$name" "$chart" > /tmp/rendered.yaml 2>/dev/null || true
