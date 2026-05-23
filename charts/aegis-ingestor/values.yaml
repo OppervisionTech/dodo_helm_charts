@@ -111,6 +111,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 6379  # Redis
+    - ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL
 
 tolerations: []
 nodeSelector: {}

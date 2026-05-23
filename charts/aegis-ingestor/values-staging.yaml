@@ -12,24 +12,45 @@ image:
 imagePullSecrets:
   - name: registry-dodo-aegisops-staging
 
-replicaCount: 2
+replicaCount: 1
 
 hpa:
   enabled: true
-  minReplicas: 2
-  maxReplicas: 5
+  minReplicas: 1
+  maxReplicas: 3
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
 
 resources:
   requests:
+    cpu: 75m
+    memory: 96Mi
+  limits:
     cpu: 200m
     memory: 256Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
+
+pdb:
+  enabled: false  # minAvailable: 1 blocks rolling deploys with a single replica
 
 ingestor:
   rateLimitRps: 5000
   batchSize: 100
   batchTimeoutMs: 50
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 50051
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 9092  # Kafka
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis
+    - ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL
