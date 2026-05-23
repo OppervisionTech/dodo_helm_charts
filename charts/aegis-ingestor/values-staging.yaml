@@ -53,4 +53,4 @@ networkPolicy:
           port: 6379  # Redis
     - ports:
         - protocol: TCP
-          port: 5432  # PostgreSQL
+          port: 5433  # PostgreSQL
