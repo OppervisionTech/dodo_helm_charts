@@ -7,7 +7,7 @@
 
 global:
   environment: qa
-  domain: qa.aegisops.io
+  domain: qa.oppervision.com.br
   logLevel: info
 
 # --- aegis-agent ---
@@ -79,7 +79,7 @@ aegis-dashboard:
     minReplicas: 2
     maxReplicas: 5
   ingress:
-    hostname: dashboard.qa.aegisops.io
+    hostname: dashboard.qa.oppervision.com.br
     tls:
       enabled: true
     annotations:
@@ -92,7 +92,7 @@ aegis-portal:
     minReplicas: 2
     maxReplicas: 5
   ingress:
-    hostname: portal.qa.aegisops.io
+    hostname: portal.qa.oppervision.com.br
     tls:
       enabled: true
     annotations:

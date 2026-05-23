@@ -19,4 +19,4 @@ resources:
     memory: 2Gi
 
 queryApi:
-  corsAllowedOrigins: "https://dashboard.aegisops.io,https://portal.aegisops.io"
+  corsAllowedOrigins: "https://dashboard.oppervision.com.br,https://portal.oppervision.com.br"

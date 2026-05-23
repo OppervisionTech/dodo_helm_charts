@@ -29,7 +29,7 @@ resources:
 
 ingress:
   className: kong
-  hostname: dashboard.staging.aegisops.io
+  hostname: dashboard.staging.oppervision.com.br
   tls:
     enabled: true
     secretName: dashboard-qa-tls

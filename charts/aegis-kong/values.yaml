@@ -167,7 +167,7 @@ routes:
   # Rota gRPC para o ingestor
   ingestor:
     enabled: true
-    hostname: ""  # definido por ambiente (ex: api.aegisops.io)
+    hostname: ""  # definido por ambiente (ex: api.oppervision.com.br)
     path: /ingest
     service: aegis-ingestor
     port: 50051
@@ -180,7 +180,7 @@ routes:
   # Rota HTTP para a query-api
   queryApi:
     enabled: true
-    hostname: ""  # definido por ambiente (ex: api.aegisops.io)
+    hostname: ""  # definido por ambiente (ex: api.oppervision.com.br)
     path: /api
     service: aegis-query-api
     port: 8080

@@ -19,7 +19,7 @@ resources:
 
 ingress:
   className: kong
-  hostname: portal.aegisops.io
+  hostname: portal.oppervision.com.br
   tls:
     enabled: true
     secretName: portal-prod-tls
