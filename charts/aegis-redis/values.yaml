@@ -78,6 +78,10 @@ networkPolicy:
           port: 6379
   egress: []
 
+pdb:
+  enabled: false
+  minAvailable: 1
+
 tolerations: []
 nodeSelector: {}
 extraAnnotations: {}
