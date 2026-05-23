@@ -13,6 +13,10 @@ keywords:
   - ingress
   - api-gateway
   - grpc
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"
 maintainers:
   - name: Oppervision
     email: ops@oppervision.com.br
