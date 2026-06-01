@@ -21,7 +21,7 @@ resources:
 health:
   type: http
   liveness:
-    path: /
+    path: /api/health
     port: http
     initialDelay: 10
     period: 20
