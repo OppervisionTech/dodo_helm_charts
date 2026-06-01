@@ -40,5 +40,16 @@ featureFlags:
   classificationEnabled: true
   remediationEnabled: false
 
+aiCore:
+  port: 8000
+
+service:
+  port: 8000
+
+# Staging: readyz exige models carregados (PVC vazio) — usar healthz
+health:
+  readiness:
+    path: /healthz
+
 secrets:
   appCredentials: aegis-ai-core-app-secrets
