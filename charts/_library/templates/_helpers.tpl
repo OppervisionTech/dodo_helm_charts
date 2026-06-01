@@ -400,8 +400,12 @@ Example:
   valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-http-port } }
 - name: CLICKHOUSE_NATIVE_PORT
   valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-native-port } }
+- name: CLICKHOUSE_USERNAME
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-username } }
 - name: CLICKHOUSE_PASSWORD
   valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-password } }
+- name: CLICKHOUSE_DB
+  valueFrom: { secretKeyRef: { name: {{ $secret }}, key: clickhouse-db, optional: true } }
   {{- else if eq . "redis" }}
 - name: REDIS_HOST
   valueFrom: { secretKeyRef: { name: {{ $secret }}, key: redis-host } }
