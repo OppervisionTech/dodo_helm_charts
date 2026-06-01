@@ -68,4 +68,5 @@ health:
   liveness:
     initialDelay: 300
   readiness:
+    path: /
     initialDelay: 10

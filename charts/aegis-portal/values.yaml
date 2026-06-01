@@ -77,7 +77,7 @@ ingress:
     konghq.com/plugins: "security-headers"
 
 portal:
-  port: 3000
+  port: 3001
   # Supabase public values — publishable key é exposta por design no client.
   # Ficam aqui (não em secrets) porque NÃO são segredos e precisam estar no ConfigMap.
   supabase:
@@ -107,7 +107,7 @@ networkPolicy:
   ingress:
     - ports:
         - protocol: TCP
-          port: 3000
+          port: 3001
   egress:
     - ports:
         - protocol: TCP
