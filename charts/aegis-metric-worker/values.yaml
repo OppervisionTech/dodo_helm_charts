@@ -103,3 +103,8 @@ networkPolicy:
 tolerations: []
 nodeSelector: {}
 extraAnnotations: {}
+
+aegis:
+  agentID: "11111111-0000-4000-a000-000000000003"
+  ingestorAddr: "aegis-ingestor:50051"
+  environment: "production"
