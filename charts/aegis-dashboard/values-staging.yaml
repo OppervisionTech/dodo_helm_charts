@@ -1,7 +1,7 @@
 # =============================================================================
 # aegis-dashboard — Staging Environment Values
 # =============================================================================
-# 2 réplicas, HPA moderado, TLS via cert-manager (LE staging), ingress Kong.
+# 2 réplicas, HPA moderado, TLS via cert-manager (LE production), ingress Kong.
 # =============================================================================
 
 image:
@@ -34,9 +34,16 @@ ingress:
     enabled: true
     secretName: dashboard-qa-tls
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-staging
+    cert-manager.io/cluster-issuer: letsencrypt-production
     konghq.com/protocols: "https"
     konghq.com/https-redirect-status-code: "301"
 
 dashboard:
   queryApiUrl: "http://aegis-query-api:8080"
+
+# Env runtime (SSR / middleware / API routes).
+# NEXT_PUBLIC_* aqui só vale pro lado Node — pro bundle do browser, o build do
+# dodo_dashboard precisa receber os build-args correspondentes.
+env:
+  NEXT_PUBLIC_PORTAL_URL: https://portal.staging.oppervision.com.br
+  PORTAL_INTERNAL_URL: http://aegis-portal.dodo.svc.cluster.local:3000
