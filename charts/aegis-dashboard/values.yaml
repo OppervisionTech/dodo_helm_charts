@@ -82,6 +82,14 @@ dashboard:
   featureFlags: {}
   analyticsConfig: {}
 
+# Variáveis de ambiente injetadas no container do dashboard.
+# Atenção Next.js: NEXT_PUBLIC_* aqui só atendem o SSR / middleware / API routes do
+# Node. O bundle JS entregue ao browser foi inlinado em build time pelo Dockerfile
+# do dodo_dashboard — sobrescrever aqui sozinho NÃO atualiza o que roda no client.
+# Para isso, o pipeline do dodo_dashboard precisa publicar imagem com os build-args
+# corretos (ARG NEXT_PUBLIC_*).
+env: {}
+
 networkPolicy:
   enabled: true
   allowDNS: true

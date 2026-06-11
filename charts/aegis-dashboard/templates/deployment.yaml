@@ -44,6 +44,13 @@ spec:
           {{- include "aegis.healthCheck" . | nindent 10 }}
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
+          {{- with .Values.env }}
+          env:
+            {{- range $k, $v := . }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          {{- end }}
           volumeMounts:
             - name: config
               mountPath: /etc/aegis-dashboard
