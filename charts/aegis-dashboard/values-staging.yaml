@@ -41,9 +41,12 @@ ingress:
 dashboard:
   queryApiUrl: "http://aegis-query-api:8080"
 
-# Env runtime (SSR / middleware / API routes).
+# Env runtime (SSR / middleware / API routes), injetadas via ConfigMap → envFrom.
 # NEXT_PUBLIC_* aqui só vale pro lado Node — pro bundle do browser, o build do
 # dodo_dashboard precisa receber os build-args correspondentes.
 env:
   NEXT_PUBLIC_PORTAL_URL: https://portal.staging.oppervision.com.br
+  NEXT_PUBLIC_DASHBOARD_URL: https://dashboard.staging.oppervision.com.br
+  NEXT_PUBLIC_API_URL: https://api.staging.oppervision.com.br
+  NEXT_PUBLIC_WS_URL: wss://api.staging.oppervision.com.br
   PORTAL_INTERNAL_URL: http://aegis-portal.dodo.svc.cluster.local:3000
