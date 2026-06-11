@@ -35,5 +35,17 @@ resources:
 env:
   DODO_QUERY_CORS_ALLOWED_ORIGINS: "https://dashboard.staging.oppervision.com.br,https://portal.staging.oppervision.com.br"
 
+ingress:
+  enabled: true
+  className: kong
+  hostname: api.staging.oppervision.com.br
+  tls:
+    enabled: true
+    secretName: api-staging-tls
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "301"
+
 secrets:
   jwtPubkey: aegis-query-api-jwt

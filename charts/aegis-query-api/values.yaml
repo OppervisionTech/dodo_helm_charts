@@ -57,6 +57,22 @@ service:
   type: ClusterIP
   port: 8080
 
+# Externamente exposto via Kong + cert-manager. Default disabled — habilitar
+# por ambiente. Kong já trata WebSocket upgrade transparente, então o mesmo
+# host serve REST e WS.
+ingress:
+  enabled: false
+  className: kong
+  hostname: api.oppervision.com.br
+  tls:
+    enabled: true
+    secretName: ""
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    konghq.com/protocols: "https"
+    konghq.com/https-redirect-status-code: "301"
+    konghq.com/plugins: "security-headers"
+
 hpa:
   enabled: true
   minReplicas: 2
