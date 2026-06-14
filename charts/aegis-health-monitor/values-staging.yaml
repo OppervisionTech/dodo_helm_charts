@@ -24,3 +24,7 @@ worker:
   heartbeatTTL: 90s
   escalationP1Threshold: 5m
   escalationP2Threshold: 2m
+
+aegis:
+  agentID: "11111111-0000-4000-a000-000000000006"
+  environment: "staging"

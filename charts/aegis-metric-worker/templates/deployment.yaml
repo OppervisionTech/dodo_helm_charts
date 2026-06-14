@@ -54,6 +54,14 @@ spec:
               value: "$(KAFKA_BOOTSTRAP)"
             - name: REDIS_ADDR
               value: "$(REDIS_HOST):$(REDIS_PORT)"
+            {{- if .Values.aegis.agentID }}
+            - name: AEGIS_AGENT_ID
+              value: {{ .Values.aegis.agentID | quote }}
+            - name: AEGIS_INGESTOR_ADDR
+              value: {{ .Values.aegis.ingestorAddr | quote }}
+            - name: AEGIS_ENVIRONMENT
+              value: {{ .Values.aegis.environment | quote }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "aegis.fullname" . }}

@@ -1,0 +1,65 @@
+falco:
+  driver:
+    kind: modern_ebpf
+
+  falco:
+    json_output: true
+    log_level: info
+
+  # Custom AegisOps rules via Falco helm chart customRules map
+  customRules:
+    aegisops-rules.yaml: |
+      - rule: Shell spawned in AegisOps container
+        desc: Detects shell execution inside any AegisOps pod
+        condition: >
+          spawned_process
+          and container
+          and container.name startswith "aegis-"
+          and proc.name in (sh, bash, zsh, dash, ash)
+          and not proc.pname in (sh, bash, zsh, dash, ash)
+        output: >
+          Shell spawned in AegisOps container
+          (user=%user.name container=%container.name image=%container.image.repository
+          proc=%proc.name parent=%proc.pname cmdline=%proc.cmdline)
+        priority: WARNING
+        tags: [aegisops, shell, runtime]
+
+      - rule: Sensitive file read in AegisOps container
+        desc: Detects reads of sensitive files in AegisOps pods
+        condition: >
+          open_read
+          and container
+          and container.name startswith "aegis-"
+          and fd.name in (/etc/passwd, /etc/shadow, /etc/sudoers, /root/.ssh/authorized_keys)
+        output: >
+          Sensitive file read
+          (user=%user.name container=%container.name file=%fd.name proc=%proc.name)
+        priority: ERROR
+        tags: [aegisops, sensitive-file, runtime]
+
+      - rule: Unexpected outbound from worker pod
+        desc: Worker pods should only connect to known backends (Kafka, ClickHouse, Redis, DNS)
+        condition: >
+          outbound
+          and container
+          and (container.name startswith "aegis-log-worker"
+               or container.name startswith "aegis-metric-worker"
+               or container.name startswith "aegis-otel-worker")
+          and not fd.sport in (9092, 9000, 8123, 6379, 53)
+        output: >
+          Unexpected outbound connection from worker
+          (container=%container.name image=%container.image.repository
+          dst=%fd.rip:%fd.rport proc=%proc.name)
+        priority: WARNING
+        tags: [aegisops, network, runtime]
+
+  falcosidekick:
+    enabled: false
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

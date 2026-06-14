@@ -64,9 +64,22 @@ agent:
     network: true
     processes: true
     kubernetes: false
+    logs:
+      enabled: false
+      paths: "/host/var/log/containers/*.log"
+      maxLinesPerSec: 5000
   ingestorEndpoint: "aegis-ingestor:50051"
   bufferPath: /var/lib/aegis-agent/buffer
   bufferMaxSize: 512Mi
+  logging:
+    level: info
+  labels:
+    environment: prod
+  # Run privileged — required for DaemonSet host monitoring (host /proc, /sys access).
+  # Set true in dev; in production use capabilities instead.
+  privileged: false
+  # Disable liveness/readiness probes. Set true when the agent binary has no HTTP health endpoint.
+  disableHealthChecks: false
 
 # mTLS certificate secret (required)
 tls:

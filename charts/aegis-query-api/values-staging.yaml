@@ -11,7 +11,7 @@
 image:
   repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_query_api
   tag: "latest"
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 imagePullSecrets:
   - name: registry-dodo-aegisops-staging
@@ -37,3 +37,7 @@ env:
 
 secrets:
   jwtPubkey: aegis-query-api-jwt
+
+aegis:
+  agentID: "11111111-0000-4000-a000-000000000001"
+  environment: "staging"

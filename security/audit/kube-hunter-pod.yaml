@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kube-hunter
+  namespace: dodo
+  labels:
+    app: kube-hunter
+spec:
+  restartPolicy: Never
+  serviceAccountName: default
+  # hostNetwork: false — simulates attacker inside the cluster (pod perspective)
+  containers:
+    - name: kube-hunter
+      image: aquasec/kube-hunter:latest
+      args: ["--pod", "--report", "plain", "--log", "none"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        runAsUser: 65534
+        capabilities:
+          drop: ["ALL"]
+        readOnlyRootFilesystem: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi

@@ -51,11 +51,19 @@ spec:
             - name: CLICKHOUSE_ADDR
               value: "$(CLICKHOUSE_HOST):$(CLICKHOUSE_NATIVE_PORT)"
             - name: CLICKHOUSE_USER
-              value: "dodo"
+              value: "$(CLICKHOUSE_USERNAME)"
             - name: CLICKHOUSE_DATABASE
-              value: "dodo_logs"
+              value: "$(CLICKHOUSE_DB)"
             - name: KAFKA_BROKERS
               value: "$(KAFKA_BOOTSTRAP)"
+            {{- if .Values.aegis.agentID }}
+            - name: AEGIS_AGENT_ID
+              value: {{ .Values.aegis.agentID | quote }}
+            - name: AEGIS_INGESTOR_ADDR
+              value: {{ .Values.aegis.ingestorAddr | quote }}
+            - name: AEGIS_ENVIRONMENT
+              value: {{ .Values.aegis.environment | quote }}
+            {{- end }}
           {{- if .Values.secrets.credentials }}
           envFrom:
             - secretRef:

@@ -25,7 +25,14 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "aegis.serviceAccountName" . }}
+      {{- if .Values.agent.privileged }}
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
+      {{- else }}
       {{- include "aegis.podSecurityContext" . | nindent 6 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -49,12 +56,20 @@ spec:
             - name: http
               containerPort: {{ .Values.agent.port }}
               protocol: TCP
+          {{- if not .Values.agent.disableHealthChecks }}
           {{- include "aegis.healthCheck" . | nindent 10 }}
+          {{- end }}
           {{- include "aegis.resourceLimits" . | nindent 10 }}
+          {{- if .Values.agent.privileged }}
+          securityContext:
+            privileged: true
+            readOnlyRootFilesystem: false
+          {{- else }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
+          {{- end }}
           volumeMounts:
             - name: config
-              mountPath: /etc/aegis-agent
+              mountPath: /etc/aegis
               readOnly: true
             - name: proc
               mountPath: /host/proc
@@ -65,11 +80,20 @@ spec:
             - name: varlog
               mountPath: /host/var/log
               readOnly: true
+            {{- if .Values.agent.collectors.logs.enabled }}
+            - name: dockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: varlogpods
+              mountPath: /var/log/pods
+              readOnly: true
+            {{- end }}
+            # Mount the parent dir so agent-id and buffer subdir are both writable
             - name: buffer
-              mountPath: {{ .Values.agent.bufferPath }}
+              mountPath: /var/lib/aegis-agent
             {{- if .Values.tls.secretName }}
             - name: tls
-              mountPath: /etc/aegis-agent/tls
+              mountPath: /etc/aegis/tls
               readOnly: true
             {{- end }}
           env:
@@ -97,10 +121,20 @@ spec:
           hostPath:
             path: /var/log
             type: Directory
+        {{- if .Values.agent.collectors.logs.enabled }}
+        - name: dockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+            type: Directory
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+            type: Directory
+        {{- end }}
         - name: buffer
           {{- if eq .Values.buffer.type "hostPath" }}
           hostPath:
-            path: {{ .Values.buffer.hostPath }}
+            path: /var/lib/aegis-agent
             type: DirectoryOrCreate
           {{- else }}
           persistentVolumeClaim:

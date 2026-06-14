@@ -104,3 +104,8 @@ networkPolicy:
 tolerations: []
 nodeSelector: {}
 extraAnnotations: {}
+
+aegis:
+  agentID: "11111111-0000-4000-a000-000000000005"
+  ingestorAddr: "aegis-ingestor.dodo.svc.cluster.local:50051"
+  environment: "development"

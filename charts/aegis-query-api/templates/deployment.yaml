@@ -59,11 +59,19 @@ spec:
             - name: DODO_QUERY_POSTGRESQL_DSN
               value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
             - name: DODO_QUERY_CLICKHOUSE_DSN
-              value: "clickhouse://dodo:$(CLICKHOUSE_PASSWORD)@$(CLICKHOUSE_HOST):$(CLICKHOUSE_NATIVE_PORT)/dodo_logs"
+              value: "clickhouse://$(CLICKHOUSE_USERNAME):$(CLICKHOUSE_PASSWORD)@$(CLICKHOUSE_HOST):$(CLICKHOUSE_NATIVE_PORT)/$(CLICKHOUSE_DB)"
             - name: DODO_QUERY_REDIS_ADDRESS
               value: "$(REDIS_HOST):$(REDIS_PORT)"
             - name: DODO_QUERY_REDIS_PASSWORD
               value: "$(REDIS_PASSWORD)"
+            {{- if .Values.aegis.agentID }}
+            - name: AEGIS_AGENT_ID
+              value: {{ .Values.aegis.agentID | quote }}
+            - name: AEGIS_INGESTOR_ADDR
+              value: {{ .Values.aegis.ingestorAddr | quote }}
+            - name: AEGIS_ENVIRONMENT
+              value: {{ .Values.aegis.environment | quote }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "aegis.fullname" . }}

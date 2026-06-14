@@ -39,6 +39,10 @@ aegis-ingestor:
 # --- aegis-ai-core ---
 aegis-ai-core:
   replicaCount: 1
+  image:
+    repository: dodo/ai-core
+    tag: local
+    pullPolicy: Never
   gpu:
     enabled: false
   resources:
@@ -50,6 +54,8 @@ aegis-ai-core:
       memory: 2Gi
   modelCache:
     size: 5Gi
+  secrets:
+    appCredentials: aegis-ai-core-credentials
 
 # --- aegis-query-api ---
 aegis-query-api:
@@ -121,6 +127,14 @@ aegis-dashboard:
     limits:
       cpu: 200m
       memory: 256Mi
+  env:
+    DODO_DEV: "false"
+    PORTAL_INTERNAL_URL: "http://aegis-portal.dodo.svc.cluster.local:3001"
+    NEXT_PUBLIC_PORTAL_URL: "http://localhost:3001"
+    NEXT_PUBLIC_SUPABASE_URL: "https://vnkhsfwxqkyvjyncmvrt.supabase.co"
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_5tCYIS89vr7JgrpkAK6EvQ_tj3FGUcf"
+    # Server-side proxy target — read at Next.js startup, no image rebuild needed
+    QUERY_API_URL: "http://aegis-query-api.dodo.svc.cluster.local:8080"
 
 aegis-portal:
   replicaCount: 1
@@ -199,6 +213,12 @@ aegis-kafka:
       partitions: 1
       replicationFactor: 1
     - name: cert-inventory
+      partitions: 1
+      replicationFactor: 1
+    - name: ai-solution-events
+      partitions: 1
+      replicationFactor: 1
+    - name: alert-events
       partitions: 1
       replicationFactor: 1
   affinity: {}

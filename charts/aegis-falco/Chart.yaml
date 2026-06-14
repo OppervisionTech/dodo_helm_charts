@@ -1,0 +1,11 @@
+apiVersion: v2
+name: aegis-falco
+description: Falco runtime security monitoring for AegisOps cluster
+type: application
+version: 0.1.0
+appVersion: "0.40.0"
+
+dependencies:
+  - name: falco
+    version: "4.x.x"
+    repository: "https://falcosecurity.github.io/charts"

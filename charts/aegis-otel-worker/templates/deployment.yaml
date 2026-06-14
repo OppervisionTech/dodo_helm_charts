@@ -49,11 +49,19 @@ spec:
           env:
             {{- include "aegis.dbCredsEnv" (dict "components" (list "pg" "clickhouse" "kafka")) | nindent 12 }}
             - name: POSTGRES_DSN
-              value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_topology?sslmode=disable"
+              value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
             - name: KAFKA_BROKERS
               value: "$(KAFKA_BOOTSTRAP)"
             - name: CLICKHOUSE_ADDRS
               value: "$(CLICKHOUSE_HOST):$(CLICKHOUSE_NATIVE_PORT)"
+            {{- if .Values.aegis.agentID }}
+            - name: AEGIS_AGENT_ID
+              value: {{ .Values.aegis.agentID | quote }}
+            - name: AEGIS_INGESTOR_ADDR
+              value: {{ .Values.aegis.ingestorAddr | quote }}
+            - name: AEGIS_ENVIRONMENT
+              value: {{ .Values.aegis.environment | quote }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "aegis.fullname" . }}

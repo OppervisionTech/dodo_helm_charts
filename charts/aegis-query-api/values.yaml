@@ -118,6 +118,9 @@ env:
   DODO_QUERY_LOG_FORMAT: json
   DODO_QUERY_CORS_ALLOWED_ORIGINS: "*"
   DODO_AI_CORE_URL: http://aegis-ai-core:8080
+  # Kafka: use PANDAPROXY_URL for Redpanda/dev-container, KAFKA_BROKERS for standard Kafka
+  KAFKA_BROKERS: aegis-kafka:9092
+  PANDAPROXY_URL: ""
 
 # Secrets externos referenciados por nome (não criados pelo chart).
 #   appCredentials — Secret com env vars adicionais (vazio em staging atual).
@@ -156,3 +159,8 @@ networkPolicy:
 tolerations: []
 nodeSelector: {}
 extraAnnotations: {}
+
+aegis:
+  agentID: "11111111-0000-4000-a000-000000000001"
+  ingestorAddr: "aegis-ingestor.dodo.svc.cluster.local:50051"
+  environment: "development"

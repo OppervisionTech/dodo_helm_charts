@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kube-bench-weekly
+  namespace: dodo
+  labels:
+    app: kube-bench
+spec:
+  # Every Monday at 09:00 UTC
+  schedule: "0 9 * * 1"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          hostPID: true
+          restartPolicy: Never
+          serviceAccountName: default
+          securityContext:
+            runAsNonRoot: false
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: kube-bench
+              image: aquasec/kube-bench:latest
+              args: ["node"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                  add: ["SYS_PTRACE"]
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              volumeMounts:
+                - name: var-lib-kubelet
+                  mountPath: /var/lib/kubelet
+                  readOnly: true
+                - name: etc-systemd
+                  mountPath: /etc/systemd
+                  readOnly: true
+                - name: lib-systemd
+                  mountPath: /lib/systemd/
+                  readOnly: true
+                - name: etc-kubernetes
+                  mountPath: /etc/kubernetes
+                  readOnly: true
+                - name: usr-bin
+                  mountPath: /usr/local/mount-from-host/bin
+                  readOnly: true
+          volumes:
+            - name: var-lib-kubelet
+              hostPath:
+                path: "/var/lib/kubelet"
+            - name: etc-systemd
+              hostPath:
+                path: "/etc/systemd"
+            - name: lib-systemd
+              hostPath:
+                path: "/lib/systemd"
+            - name: etc-kubernetes
+              hostPath:
+                path: "/etc/kubernetes"
+            - name: usr-bin
+              hostPath:
+                path: "/usr/bin"

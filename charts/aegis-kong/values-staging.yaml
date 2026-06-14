@@ -29,6 +29,12 @@ kic:
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
 
+plugins:
+  corsApi:
+    origins:
+      - "https://dashboard.staging.oppervision.com.br"
+      - "https://portal.staging.oppervision.com.br"
+
 routes:
   ingestor:
     hostname: "api.staging.oppervision.com.br"
