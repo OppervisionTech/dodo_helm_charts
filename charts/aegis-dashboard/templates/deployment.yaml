@@ -44,16 +44,13 @@ spec:
           {{- include "aegis.healthCheck" . | nindent 10 }}
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
-          {{- with .Values.env }}
-          env:
-            {{- range $k, $v := . }}
-            - name: {{ $k }}
-              value: {{ $v | quote }}
-            {{- end }}
-          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "aegis.fullname" . }}
           volumeMounts:
             - name: config
-              mountPath: /etc/aegis-dashboard
+              mountPath: /etc/aegis-dashboard/config.json
+              subPath: config.json
               readOnly: true
             - name: tmp
               mountPath: /tmp
@@ -63,6 +60,9 @@ spec:
         - name: config
           configMap:
             name: {{ include "aegis.fullname" . }}
+            items:
+              - key: config.json
+                path: config.json
         - name: tmp
           emptyDir: {}
         - name: nextjs-cache
