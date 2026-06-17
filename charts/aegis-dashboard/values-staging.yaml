@@ -56,3 +56,4 @@ env:
   NEXT_PUBLIC_API_URL: https://api.staging.oppervision.com.br
   NEXT_PUBLIC_WS_URL: wss://api.staging.oppervision.com.br
   PORTAL_INTERNAL_URL: http://aegis-portal.dodo.svc.cluster.local:3000
+  COOKIE_DOMAIN: ".staging.oppervision.com.br"
