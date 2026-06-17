@@ -42,7 +42,7 @@ ingress:
     enabled: true
     secretName: portal-staging-tls
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-staging
+    cert-manager.io/cluster-issuer: letsencrypt-production
     konghq.com/protocols: "https"
     konghq.com/https-redirect-status-code: "301"
 
