@@ -47,11 +47,21 @@ spec:
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
-            {{- include "aegis.dbCredsEnv" (dict "components" (list "redis" "kafka")) | nindent 12 }}
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "redis" "kafka" "pg" "tsdb" "clickhouse")) | nindent 12 }}
             - name: REDIS_ADDR
               value: "$(REDIS_HOST):$(REDIS_PORT)"
             - name: KAFKA_BROKERS
               value: "$(KAFKA_BOOTSTRAP)"
+            - name: PLATFORM_TELEMETRY_CMDB_DSN
+              value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
+            - name: PLATFORM_TELEMETRY_TIMESCALEDB_DSN
+              value: "postgres://dodo:$(TSDB_PASSWORD)@$(TSDB_HOST):$(TSDB_PORT)/dodo_metrics?sslmode=disable"
+            - name: PLATFORM_TELEMETRY_CLICKHOUSE_ADDR
+              value: "$(CLICKHOUSE_HOST):$(CLICKHOUSE_NATIVE_PORT)"
+            - name: PLATFORM_TELEMETRY_CLICKHOUSE_USER
+              value: "$(CLICKHOUSE_USERNAME)"
+            - name: PLATFORM_TELEMETRY_CLICKHOUSE_PASSWORD
+              value: "$(CLICKHOUSE_PASSWORD)"
             {{- if .Values.aegis.agentID }}
             - name: AEGIS_AGENT_ID
               value: {{ .Values.aegis.agentID | quote }}

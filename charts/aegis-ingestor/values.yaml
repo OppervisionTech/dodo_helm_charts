@@ -19,15 +19,17 @@ resources:
     memory: 1Gi
 
 health:
-  type: grpc
+  type: http
   liveness:
-    port: 50051
+    path: /healthz
+    port: 8080
     initialDelay: 10
     period: 20
     timeout: 5
     failureThreshold: 3
   readiness:
-    port: 50051
+    path: /readyz
+    port: 8080
     initialDelay: 5
     period: 10
     timeout: 3

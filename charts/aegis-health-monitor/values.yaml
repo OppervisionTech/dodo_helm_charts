@@ -81,6 +81,12 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 6379  # Redis
+    - ports:
+        - protocol: TCP
+          port: 5432  # PostgreSQL / TimescaleDB
+    - ports:
+        - protocol: TCP
+          port: 9000  # ClickHouse native
 
 tolerations: []
 nodeSelector: {}
