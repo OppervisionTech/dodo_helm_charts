@@ -10,6 +10,12 @@ image:
 
 replicaCount: 1
 
+# Recreate is required when modelCache.enabled=true because the PVC is
+# ReadWriteOnce — block storage can't be mounted by two pods simultaneously.
+# RollingUpdate would deadlock: new pod can't mount until old pod releases,
+# but old pod won't terminate until new pod is Ready.
+deploymentStrategy: Recreate
+
 resources:
   requests:
     cpu: 500m
