@@ -103,7 +103,9 @@ networkPolicy:
           port: 8080  # query-api (in-cluster)
     - ports:
         - protocol: TCP
-          port: 3000  # portal (in-cluster, PORTAL_INTERNAL_URL)
+          port: 3000  # portal service port (PORTAL_INTERNAL_URL)
+        - protocol: TCP
+          port: 3001  # portal container port (Cilium avalia pós-DNAT)
     - ports:
         - protocol: TCP
           port: 443   # HTTPS — Supabase Auth + APIs externas
