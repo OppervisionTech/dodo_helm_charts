@@ -100,7 +100,10 @@ networkPolicy:
   egress:
     - ports:
         - protocol: TCP
-          port: 8080  # query-api
+          port: 8080  # query-api (in-cluster)
+    - ports:
+        - protocol: TCP
+          port: 443   # HTTPS — Supabase Auth + APIs externas
 
 tolerations: []
 nodeSelector: {}
