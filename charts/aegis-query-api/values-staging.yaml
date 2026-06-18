@@ -11,7 +11,7 @@
 image:
   repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_query_api
   tag: "latest"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 imagePullSecrets:
   - name: registry-dodo-aegisops-staging
