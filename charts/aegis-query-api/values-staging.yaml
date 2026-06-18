@@ -34,6 +34,8 @@ resources:
 
 env:
   DODO_QUERY_CORS_ORIGINS: "https://dashboard.staging.oppervision.com.br,https://portal.staging.oppervision.com.br"
+  DODO_QUERY_JWT_ISSUER: "https://vnkhsfwxqkyvjyncmvrt.supabase.co/auth/v1"
+  DODO_QUERY_JWT_AUDIENCE: "authenticated"
 
 ingress:
   enabled: true
