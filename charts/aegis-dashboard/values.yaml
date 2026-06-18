@@ -103,6 +103,9 @@ networkPolicy:
           port: 8080  # query-api (in-cluster)
     - ports:
         - protocol: TCP
+          port: 3000  # portal (in-cluster, PORTAL_INTERNAL_URL)
+    - ports:
+        - protocol: TCP
           port: 443   # HTTPS — Supabase Auth + APIs externas
 
 tolerations: []
