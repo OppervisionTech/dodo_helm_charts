@@ -33,7 +33,7 @@ resources:
     memory: 512Mi
 
 env:
-  DODO_QUERY_CORS_ALLOWED_ORIGINS: "https://dashboard.staging.oppervision.com.br,https://portal.staging.oppervision.com.br"
+  DODO_QUERY_CORS_ORIGINS: "https://dashboard.staging.oppervision.com.br,https://portal.staging.oppervision.com.br"
 
 ingress:
   enabled: true
