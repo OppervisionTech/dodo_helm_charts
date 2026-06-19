@@ -16,6 +16,9 @@ resources:
 agent:
   collectionInterval: 30s
   ingestorEndpoint: "aegis-ingestor:50051"
+  # Privileged required: host /proc, /sys access + write agent_id/buffer to hostPath
+  privileged: true
+  disableHealthChecks: true
 
 buffer:
   type: hostPath
