@@ -170,6 +170,12 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 8080  # aegis-ai-core (in-cluster)
+    - ports:
+        - protocol: TCP
+          port: 50051  # aegis-ingestor (gRPC self-monitoring)
+    - ports:
+        - protocol: TCP
+          port: 9092  # Kafka (native_solution_consumer)
 
 tolerations: []
 nodeSelector: {}
