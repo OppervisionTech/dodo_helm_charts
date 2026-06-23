@@ -1,0 +1,88 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dodo-topology-seed
+  namespace: dodo
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seed
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              export PGPASSWORD="$PG_PASSWORD"
+              DSN="postgresql://dodo_app@${PG_HOST}:${PG_PORT}/dodo_cmdb?sslmode=disable"
+
+              echo "=== Org IDs com servicos aegis registrados ==="
+              psql "$DSN" -c "SELECT DISTINCT org_id FROM topology_services WHERE service_name LIKE 'aegis-%';"
+
+              echo "=== Seeding nos de infra ==="
+              psql "$DSN" -c "
+                INSERT INTO topology_services (org_id, service_name, service_type, first_seen_at, last_seen_at)
+                SELECT DISTINCT ts.org_id, infra.svc, infra.typ, NOW(), NOW()
+                FROM topology_services ts
+                CROSS JOIN (VALUES
+                  ('aegis-clickhouse',  'database'),
+                  ('aegis-timescaledb', 'database'),
+                  ('aegis-postgresql',  'database'),
+                  ('aegis-redis',       'cache'),
+                  ('aegis-kafka',       'queue')
+                ) AS infra(svc, typ)
+                WHERE ts.service_name LIKE 'aegis-%'
+                ON CONFLICT (org_id, service_name) DO UPDATE SET last_seen_at = NOW();
+              "
+
+              echo "=== Seeding edges ==="
+              psql "$DSN" -c "
+                INSERT INTO topology_edges (org_id, source_service, target_service, operation, protocol, call_count, first_seen_at, last_seen_at)
+                SELECT DISTINCT ts.org_id, edge.src, edge.tgt, edge.op, edge.proto, 0, NOW(), NOW()
+                FROM topology_services ts
+                CROSS JOIN (VALUES
+                  ('aegis-ingestor',       'aegis-kafka',       'produce', 'messaging'),
+                  ('aegis-otel-worker',    'aegis-kafka',       'consume', 'messaging'),
+                  ('aegis-log-worker',     'aegis-kafka',       'consume', 'messaging'),
+                  ('aegis-metric-worker',  'aegis-kafka',       'consume', 'messaging'),
+                  ('aegis-otel-worker',    'aegis-clickhouse',  'write',   'database'),
+                  ('aegis-log-worker',     'aegis-clickhouse',  'write',   'database'),
+                  ('aegis-query-api',      'aegis-clickhouse',  'query',   'database'),
+                  ('aegis-metric-worker',  'aegis-timescaledb', 'write',   'database'),
+                  ('aegis-query-api',      'aegis-timescaledb', 'query',   'database'),
+                  ('aegis-query-api',      'aegis-postgresql',  'query',   'database'),
+                  ('aegis-health-monitor', 'aegis-postgresql',  'write',   'database'),
+                  ('aegis-ai-core',        'aegis-postgresql',  'query',   'database'),
+                  ('aegis-alerts',         'aegis-postgresql',  'query',   'database'),
+                  ('aegis-otel-worker',    'aegis-postgresql',  'write',   'database'),
+                  ('aegis-query-api',      'aegis-redis',       'cache',   'database'),
+                  ('aegis-metric-worker',  'aegis-redis',       'pubsub',  'database')
+                ) AS edge(src, tgt, op, proto)
+                WHERE ts.service_name LIKE 'aegis-%'
+                ON CONFLICT (org_id, source_service, target_service, operation) DO UPDATE SET last_seen_at = NOW();
+              "
+
+              echo "=== Nos de infra inseridos ==="
+              psql "$DSN" -c "SELECT service_name, service_type FROM topology_services WHERE service_name IN ('aegis-clickhouse','aegis-timescaledb','aegis-postgresql','aegis-redis','aegis-kafka') ORDER BY service_name;"
+              echo "=== Edges inseridas ==="
+              psql "$DSN" -c "SELECT source_service, target_service, protocol FROM topology_edges WHERE target_service IN ('aegis-clickhouse','aegis-timescaledb','aegis-postgresql','aegis-redis','aegis-kafka') ORDER BY source_service, target_service;"
+              echo "=== Done ==="
+          env:
+            - name: PG_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: dodo-db-credentials
+                  key: pg-host
+            - name: PG_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: dodo-db-credentials
+                  key: pg-port
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dodo-db-credentials
+                  key: pg-password
