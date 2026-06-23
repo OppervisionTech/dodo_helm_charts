@@ -121,7 +121,8 @@ env:
   DODO_QUERY_REDIS_DB: "0"
   DODO_QUERY_REDIS_POOL_SIZE: "20"
   DODO_QUERY_REDIS_MIN_IDLE_CONNS: "5"
-  DODO_QUERY_JWT_PUBLIC_KEY_PATH: /etc/aegis-query-api/certs/jwt-public.pem
+  # DODO_QUERY_JWT_PUBLIC_KEY_PATH: /etc/aegis-query-api/certs/jwt-public.pem  # usar apenas com RS256 (secrets.jwtPubkey preenchido)
+  # DODO_QUERY_JWT_SECRET é injetado via secrets.appCredentials para HS256 (padrão Supabase)
   DODO_QUERY_JWT_ISSUER: dodo_portal
   DODO_QUERY_JWT_AUDIENCE: dodo_query_api
   DODO_QUERY_RATELIMIT_ENABLED: "true"
@@ -132,10 +133,8 @@ env:
   DODO_QUERY_CACHE_TOPOLOGY_TTL: 30s
   DODO_QUERY_LOG_LEVEL: info
   DODO_QUERY_LOG_FORMAT: json
-  DODO_QUERY_CORS_ALLOWED_ORIGINS: "*"
+  DODO_QUERY_CORS_ORIGINS: "*"
   DODO_AI_CORE_URL: http://aegis-ai-core:8080
-  # Kafka: use PANDAPROXY_URL for Redpanda/dev-container, KAFKA_BROKERS for standard Kafka
-  KAFKA_BROKERS: aegis-kafka:9092
   PANDAPROXY_URL: ""
 
 # Secrets externos referenciados por nome (não criados pelo chart).

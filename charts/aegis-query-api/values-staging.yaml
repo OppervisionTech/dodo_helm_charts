@@ -3,9 +3,21 @@
 # =============================================================================
 # Pré-requisitos no cluster antes do helm install:
 #   1. Secret "dodo-db-credentials" no namespace alvo (DB host/port/password)
-#   2. Secret "aegis-query-api-jwt" com key `jwt-public.pem` contendo a chave
-#      pública JWT em PEM (pipeline do repo dodo_query_api cria via
-#      `kubectl create secret generic aegis-query-api-jwt --from-file=jwt-public.pem=...`)
+#   2. Secret "aegis-query-api-app-secrets" com a chave JWT do Supabase:
+#
+#      VERIFICAR no Supabase: Project Settings → API → JWT Settings
+#
+#      Se o projeto usa HS256 (padrão Supabase):
+#        kubectl create secret generic aegis-query-api-app-secrets \
+#          --from-literal=DODO_QUERY_JWT_SECRET=<supabase-jwt-secret> \
+#          -n dodo
+#        (Neste caso, manter secrets.jwtPubkey vazio abaixo)
+#
+#      Se o projeto usa RS256 (Supabase avançado):
+#        kubectl create secret generic aegis-query-api-jwt \
+#          --from-file=jwt-public.pem=<caminho-para-chave-publica-rs256.pem> \
+#          -n dodo
+#        (Neste caso, deixar secrets.appCredentials vazio e preencher secrets.jwtPubkey)
 # =============================================================================
 
 image:
@@ -50,7 +62,11 @@ ingress:
     konghq.com/https-redirect-status-code: "301"
 
 secrets:
-  jwtPubkey: aegis-query-api-jwt
+  # HS256 (padrão Supabase): referenciar o secret com DODO_QUERY_JWT_SECRET
+  # e deixar jwtPubkey vazio.
+  # RS256: deixar appCredentials vazio e preencher jwtPubkey com o secret PEM.
+  appCredentials: "aegis-query-api-app-secrets"
+  jwtPubkey: ""
 
 aegis:
   agentID: "11111111-0000-4000-a000-000000000001"

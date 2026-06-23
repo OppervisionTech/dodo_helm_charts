@@ -53,7 +53,9 @@ spec:
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
-            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "clickhouse" "redis")) | nindent 12 }}
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "clickhouse" "redis" "kafka")) | nindent 12 }}
+            - name: KAFKA_BROKERS
+              value: "$(KAFKA_BOOTSTRAP)"
             - name: DODO_QUERY_TIMESCALEDB_DSN
               value: "postgres://dodo:$(TSDB_PASSWORD)@$(TSDB_HOST):$(TSDB_PORT)/dodo_metrics?sslmode=disable"
             - name: DODO_QUERY_POSTGRESQL_DSN

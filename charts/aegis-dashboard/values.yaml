@@ -103,6 +103,9 @@ networkPolicy:
           port: 8080  # query-api (in-cluster)
     - ports:
         - protocol: TCP
+          port: 8000  # ai-core (in-cluster)
+    - ports:
+        - protocol: TCP
           port: 3000  # portal service port (PORTAL_INTERNAL_URL)
         - protocol: TCP
           port: 3001  # portal container port (Cilium avalia pós-DNAT)

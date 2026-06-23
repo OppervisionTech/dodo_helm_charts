@@ -63,7 +63,7 @@ agent:
     disk: true
     network: true
     processes: true
-    kubernetes: false
+    kubernetes: true
     logs:
       enabled: false
       paths: "/host/var/log/containers/*.log"

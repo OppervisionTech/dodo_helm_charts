@@ -189,4 +189,4 @@ routes:
       secretName: ""  # cert-manager provisiona automaticamente
     annotations:
       konghq.com/protocol: "https"
-      konghq.com/strip-path: "false"
+      konghq.com/strip-path: "true"

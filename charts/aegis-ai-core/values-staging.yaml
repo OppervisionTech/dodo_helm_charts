@@ -33,6 +33,8 @@ modelCache:
 
 env:
   DODO_ENVIRONMENT: staging
+  DODO_LLM_PROVIDER: openrouter
+  DODO_LLM_MODEL: nvidia/nemotron-3-super-120b-a12b:free
 
 featureFlags:
   anomalyDetection: true
@@ -53,3 +55,21 @@ health:
 
 secrets:
   appCredentials: aegis-ai-core-app-secrets
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 5433  # pgvector / TimescaleDB
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis
+    - ports:
+        - protocol: TCP
+          port: 443   # Anthropic API

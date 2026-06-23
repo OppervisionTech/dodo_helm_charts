@@ -62,6 +62,8 @@ spec:
               value: "$(CLICKHOUSE_USERNAME)"
             - name: PLATFORM_TELEMETRY_CLICKHOUSE_PASSWORD
               value: "$(CLICKHOUSE_PASSWORD)"
+            - name: PLATFORM_TELEMETRY_CLICKHOUSE_DB
+              value: "$(CLICKHOUSE_DB)"
             {{- if .Values.aegis.agentID }}
             - name: AEGIS_AGENT_ID
               value: {{ .Values.aegis.agentID | quote }}

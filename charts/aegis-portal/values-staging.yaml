@@ -50,7 +50,7 @@ env:
   NEXT_PUBLIC_APP_URL: https://portal.staging.oppervision.com.br
   NEXT_PUBLIC_DASHBOARD_URL: https://dashboard.staging.oppervision.com.br
   COOKIE_DOMAIN: ".staging.oppervision.com.br"
-  ALLOWED_ORIGINS: https://portal.staging.oppervision.com.br
+  ALLOWED_ORIGINS: https://dashboard.staging.oppervision.com.br
   NEXT_PUBLIC_API_URL: https://api.staging.oppervision.com.br
   PORTAL_QUERY_API_URL: http://aegis-query-api:8080
 

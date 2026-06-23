@@ -9,6 +9,7 @@ data:
     {
       "queryApiUrl": {{ .Values.dashboard.queryApiUrl | quote }}
     }
+  QUERY_API_URL: {{ .Values.dashboard.queryApiUrl | quote }}
   {{- range $k, $v := .Values.env }}
   {{ $k }}: {{ $v | quote }}
   {{- end }}
