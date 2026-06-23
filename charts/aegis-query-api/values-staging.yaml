@@ -3,21 +3,24 @@
 # =============================================================================
 # Pré-requisitos no cluster antes do helm install:
 #   1. Secret "dodo-db-credentials" no namespace alvo (DB host/port/password)
-#   2. Secret "aegis-query-api-app-secrets" com a chave JWT do Supabase:
+#   2. Secret "aegis-query-api-jwt" com a chave pública EC (ES256) do Supabase:
 #
-#      VERIFICAR no Supabase: Project Settings → API → JWT Settings
+#      Supabase usa ES256 (ECDSA P-256). Obter a chave pública em:
+#        Supabase → Project Settings → API → JWT Settings → JWKS endpoint:
+#        https://vnkhsfwxqkyvjyncmvrt.supabase.co/auth/v1/.well-known/jwks.json
 #
-#      Se o projeto usa HS256 (padrão Supabase):
-#        kubectl create secret generic aegis-query-api-app-secrets \
-#          --from-literal=DODO_QUERY_JWT_SECRET=<supabase-jwt-secret> \
-#          -n dodo
-#        (Neste caso, manter secrets.jwtPubkey vazio abaixo)
+#      Converter JWK → PEM (Node.js):
+#        node -e "
+#          const { createPublicKey } = require('crypto');
+#          const jwk = { /* cole o objeto da key aqui */ };
+#          const key = createPublicKey({ key: jwk, format: 'jwk' });
+#          process.stdout.write(key.export({ type: 'spki', format: 'pem' }));
+#        " > jwt-public.pem
 #
-#      Se o projeto usa RS256 (Supabase avançado):
+#      Criar o secret:
 #        kubectl create secret generic aegis-query-api-jwt \
-#          --from-file=jwt-public.pem=<caminho-para-chave-publica-rs256.pem> \
+#          --from-file=jwt-public.pem=./jwt-public.pem \
 #          -n dodo
-#        (Neste caso, deixar secrets.appCredentials vazio e preencher secrets.jwtPubkey)
 # =============================================================================
 
 image:
@@ -48,6 +51,7 @@ env:
   DODO_QUERY_CORS_ORIGINS: "https://dashboard.staging.oppervision.com.br,https://portal.staging.oppervision.com.br"
   DODO_QUERY_JWT_ISSUER: "https://vnkhsfwxqkyvjyncmvrt.supabase.co/auth/v1"
   DODO_QUERY_JWT_AUDIENCE: "authenticated"
+  DODO_QUERY_JWT_PUBLIC_KEY_PATH: /etc/aegis-query-api/certs/jwt-public.pem
 
 ingress:
   enabled: true
@@ -62,11 +66,10 @@ ingress:
     konghq.com/https-redirect-status-code: "301"
 
 secrets:
-  # HS256 (padrão Supabase): referenciar o secret com DODO_QUERY_JWT_SECRET
-  # e deixar jwtPubkey vazio.
-  # RS256: deixar appCredentials vazio e preencher jwtPubkey com o secret PEM.
-  appCredentials: "aegis-query-api-app-secrets"
-  jwtPubkey: ""
+  # ES256 (ECDSA P-256 — algoritmo Supabase deste projeto):
+  # chave pública em PEM no secret aegis-query-api-jwt (criado manualmente).
+  appCredentials: ""
+  jwtPubkey: "aegis-query-api-jwt"
 
 aegis:
   agentID: "11111111-0000-4000-a000-000000000001"
