@@ -83,7 +83,10 @@ networkPolicy:
           port: 6379  # Redis
     - ports:
         - protocol: TCP
-          port: 5432  # PostgreSQL / TimescaleDB
+          port: 5432  # TimescaleDB
+    - ports:
+        - protocol: TCP
+          port: 5433  # PostgreSQL CMDB
     - ports:
         - protocol: TCP
           port: 9000  # ClickHouse native
