@@ -56,5 +56,5 @@ networkPolicy:
           port: 5433  # PostgreSQL
 
 aegis:
-  agentID: "11111111-0000-4000-a000-000000000002"
+  agentID: ""  # registrar no portal para habilitar self-monitoring
   environment: "staging"

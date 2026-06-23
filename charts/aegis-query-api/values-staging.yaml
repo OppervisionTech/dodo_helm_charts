@@ -72,5 +72,5 @@ secrets:
   jwtPubkey: "aegis-query-api-jwt"
 
 aegis:
-  agentID: "11111111-0000-4000-a000-000000000001"
+  agentID: ""  # registrar no portal para habilitar self-monitoring
   environment: "staging"
