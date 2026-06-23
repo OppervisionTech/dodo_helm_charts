@@ -50,6 +50,10 @@ jobs:
         uses: azure/setup-helm@v4
         with:
           version: v3.17.0
+      - name: Add external Helm repos
+        run: |
+          helm repo add falcosecurity https://falcosecurity.github.io/charts
+          helm repo update
       - name: Helm lint all charts
         run: |
           for chart in charts/*/; do
@@ -72,6 +76,10 @@ jobs:
         uses: azure/setup-helm@v4
         with:
           version: v3.17.0
+      - name: Add external Helm repos
+        run: |
+          helm repo add falcosecurity https://falcosecurity.github.io/charts
+          helm repo update
       - name: Helm template (${{ matrix.env }})
         run: |
           for chart in charts/*/; do
