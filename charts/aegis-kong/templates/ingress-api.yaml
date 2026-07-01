@@ -42,6 +42,45 @@ spec:
                   number: {{ .Values.routes.ingestor.port }}
 {{- end }}
 
+{{- if .Values.routes.enrollment.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aegis.fullname" . }}-enrollment
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "https"
+    konghq.com/strip-path: "false"
+    konghq.com/plugins: "rate-limiting-enrollment"
+    {{- if .Values.routes.enrollment.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.routes.enrollment.clusterIssuer | default "letsencrypt-production" | quote }}
+    {{- end }}
+    {{- with .Values.routes.enrollment.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: kong
+  {{- if .Values.routes.enrollment.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.routes.enrollment.hostname | quote }}
+      secretName: {{ .Values.routes.enrollment.tls.secretName | default (printf "%s-enrollment-tls" (include "aegis.fullname" .)) }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.routes.enrollment.hostname | quote }}
+      http:
+        paths:
+          - path: {{ .Values.routes.enrollment.path }}
+            pathType: Exact
+            backend:
+              service:
+                name: {{ .Values.routes.enrollment.service }}
+                port:
+                  number: {{ .Values.routes.enrollment.port }}
+{{- end }}
+
 {{- if .Values.routes.queryApi.enabled }}
 ---
 apiVersion: networking.k8s.io/v1

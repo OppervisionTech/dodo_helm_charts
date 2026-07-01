@@ -124,6 +124,13 @@ plugins:
     secondLimit: 100
     policy: local  # local | redis (usar redis em prod para distribuído)
 
+  # Rate limiting para enrollment (baixo — agents não enrollam com frequência)
+  rateLimitingEnrollment:
+    enabled: true
+    minuteLimit: 10
+    secondLimit: 2
+    policy: local
+
   # Rate limiting para query-api
   rateLimitingApi:
     enabled: true
@@ -190,3 +197,15 @@ routes:
     annotations:
       konghq.com/protocol: "https"
       konghq.com/strip-path: "true"
+
+  # Rota HTTPS para auto-enrollment de certificados mTLS (sem mTLS, sem JWT)
+  # Agents chamam este endpoint ANTES de ter certificados, então não pode exigir mTLS.
+  enrollment:
+    enabled: true
+    hostname: ""  # definido por ambiente (ex: api.oppervision.com.br)
+    path: /v1/enroll
+    service: aegis-ingestor
+    port: 8082
+    tls:
+      enabled: true
+      secretName: ""  # cert-manager provisiona automaticamente

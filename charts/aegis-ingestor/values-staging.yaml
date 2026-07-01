@@ -37,6 +37,11 @@ ingestor:
   batchSize: 100
   batchTimeoutMs: 50
 
+enrollment:
+  enabled: true
+  caSecretName: "aegis-ca-secret"
+  portalVerifyURL: "http://aegis-portal.dodo.svc.cluster.local:3000/api/api-keys/verify"
+
 networkPolicy:
   enabled: true
   allowDNS: true
@@ -44,6 +49,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 50051
+    - ports:
+        - protocol: TCP
+          port: 8082  # enrollment
   egress:
     - ports:
         - protocol: TCP
@@ -54,6 +62,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 5433  # PostgreSQL
+    - ports:
+        - protocol: TCP
+          port: 3000  # dodo_portal (API key verify)
 
 aegis:
   agentID: ""  # registrar no portal para habilitar self-monitoring

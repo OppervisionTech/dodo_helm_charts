@@ -11,5 +11,11 @@ spec:
       targetPort: grpc
       protocol: {{ .Values.service.protocol }}
       name: grpc
+    {{- if .Values.enrollment.enabled }}
+    - port: {{ .Values.enrollment.port }}
+      targetPort: enrollment
+      protocol: TCP
+      name: enrollment
+    {{- end }}
   selector:
     {{- include "aegis.selectorLabels" . | nindent 4 }}

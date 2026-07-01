@@ -99,6 +99,17 @@ ingestor:
 tls:
   secretName: ""
 
+# Certificate auto-enrollment endpoint (POST /v1/enroll).
+# Requires aegis-ca-secret to be created in the same namespace before deploy.
+# See: docs/ops/create-ca-secret.md
+enrollment:
+  enabled: true
+  port: 8082
+  # Name of the K8s Secret holding ca.crt and ca.key (EC P-256).
+  caSecretName: "aegis-ca-secret"
+  # Portal API endpoint for API key verification. Set per environment.
+  portalVerifyURL: ""
+
 networkPolicy:
   enabled: true
   allowDNS: true
@@ -106,6 +117,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 50051
+    - ports:
+        - protocol: TCP
+          port: 8082  # enrollment
   egress:
     - ports:
         - protocol: TCP
@@ -116,6 +130,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 5433  # PostgreSQL
+    - ports:
+        - protocol: TCP
+          port: 3000  # dodo_portal (API key verify)
 
 tolerations: []
 nodeSelector: {}

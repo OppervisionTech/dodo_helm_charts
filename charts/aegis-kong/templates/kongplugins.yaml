@@ -18,6 +18,21 @@ config:
   policy: {{ .Values.plugins.rateLimitingIngestor.policy }}
 {{- end }}
 
+{{- if .Values.plugins.rateLimitingEnrollment.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rate-limiting-enrollment
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+plugin: rate-limiting
+config:
+  minute: {{ .Values.plugins.rateLimitingEnrollment.minuteLimit }}
+  second: {{ .Values.plugins.rateLimitingEnrollment.secondLimit }}
+  policy: {{ .Values.plugins.rateLimitingEnrollment.policy }}
+{{- end }}
+
 {{- if .Values.plugins.rateLimitingApi.enabled }}
 ---
 apiVersion: configuration.konghq.com/v1

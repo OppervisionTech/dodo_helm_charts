@@ -53,6 +53,11 @@ spec:
             - name: metrics
               containerPort: {{ .Values.metrics.port }}
               protocol: TCP
+            {{- if .Values.enrollment.enabled }}
+            - name: enrollment
+              containerPort: {{ .Values.enrollment.port }}
+              protocol: TCP
+            {{- end }}
           {{- include "aegis.healthCheck" . | nindent 10 }}
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
@@ -71,6 +76,22 @@ spec:
               value: {{ .Values.aegis.ingestorAddr | quote }}
             - name: AEGIS_ENVIRONMENT
               value: {{ .Values.aegis.environment | quote }}
+            {{- end }}
+            {{- if .Values.enrollment.enabled }}
+            - name: INGESTOR_ENROLLMENT_PORT
+              value: {{ .Values.enrollment.port | quote }}
+            - name: INGESTOR_PORTAL_VERIFY_URL
+              value: {{ .Values.enrollment.portalVerifyURL | quote }}
+            - name: AEGIS_CA_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.enrollment.caSecretName }}
+                  key: ca.crt
+            - name: AEGIS_CA_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.enrollment.caSecretName }}
+                  key: ca.key
             {{- end }}
           volumeMounts:
             - name: config

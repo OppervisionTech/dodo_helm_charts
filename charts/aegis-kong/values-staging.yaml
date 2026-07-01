@@ -34,6 +34,11 @@ plugins:
     origins:
       - "https://dashboard.staging.oppervision.com.br"
       - "https://portal.staging.oppervision.com.br"
+  rateLimitingEnrollment:
+    enabled: true
+    minuteLimit: 10
+    secondLimit: 2
+    policy: local
 
 routes:
   ingestor:
@@ -42,6 +47,12 @@ routes:
       enabled: true
     clusterIssuer: "letsencrypt-staging"
   queryApi:
+    hostname: "api.staging.oppervision.com.br"
+    tls:
+      enabled: true
+    clusterIssuer: "letsencrypt-staging"
+  enrollment:
+    enabled: true
     hostname: "api.staging.oppervision.com.br"
     tls:
       enabled: true
