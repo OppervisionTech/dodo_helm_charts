@@ -92,7 +92,7 @@ metadata:
   annotations:
     konghq.com/protocol: "https"
     konghq.com/strip-path: "false"
-    konghq.com/plugins: "rate-limiting-api,jwt-auth,cors-api"
+    konghq.com/plugins: "rate-limiting-api,cors-api"
     {{- if .Values.routes.queryApi.tls.enabled }}
     cert-manager.io/cluster-issuer: {{ .Values.routes.queryApi.clusterIssuer | default "letsencrypt-production" | quote }}
     {{- end }}
