@@ -54,7 +54,7 @@ env:
   DODO_QUERY_JWT_PUBLIC_KEY_PATH: /etc/aegis-query-api/certs/jwt-public.pem
 
 ingress:
-  enabled: true
+  enabled: false
   className: kong
   hostname: api.staging.oppervision.com.br
   tls:

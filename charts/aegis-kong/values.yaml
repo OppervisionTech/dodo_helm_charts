@@ -188,7 +188,7 @@ routes:
   queryApi:
     enabled: true
     hostname: ""  # definido por ambiente (ex: api.oppervision.com.br)
-    path: /api
+    path: /
     service: aegis-query-api
     port: 8080
     tls:
@@ -196,7 +196,6 @@ routes:
       secretName: ""  # cert-manager provisiona automaticamente
     annotations:
       konghq.com/protocol: "https"
-      konghq.com/strip-path: "true"
 
   # Rota HTTPS para auto-enrollment de certificados mTLS (sem mTLS, sem JWT)
   # Agents chamam este endpoint ANTES de ter certificados, então não pode exigir mTLS.
