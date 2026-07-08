@@ -125,6 +125,9 @@ env:
   # DODO_QUERY_JWT_SECRET é injetado via secrets.appCredentials para HS256 (padrão Supabase)
   DODO_QUERY_JWT_ISSUER: dodo_portal
   DODO_QUERY_JWT_AUDIENCE: dodo_query_api
+  # Usado para verificar membership real (organization_members) antes de
+  # aceitar o header X-Org-ID como fallback para JWTs sem claim org_id.
+  DODO_QUERY_PORTAL_INTERNAL_URL: "http://aegis-portal.dodo.svc.cluster.local:3000"
   DODO_QUERY_RATELIMIT_ENABLED: "true"
   DODO_QUERY_RATELIMIT_REQUESTS_PER_SECOND: "100"
   DODO_QUERY_RATELIMIT_BURST_SIZE: "200"
@@ -176,6 +179,11 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 9092  # Kafka (native_solution_consumer)
+    - ports:
+        - protocol: TCP
+          port: 3000  # aegis-portal service port (DODO_QUERY_PORTAL_INTERNAL_URL)
+        - protocol: TCP
+          port: 3001  # aegis-portal container port (Cilium avalia pós-DNAT)
 
 tolerations: []
 nodeSelector: {}
