@@ -92,6 +92,13 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.enrollment.caSecretName }}
                   key: ca.key
+            {{- if .Values.enrollment.jwtSecretName }}
+            - name: AEGIS_AGENT_JWT_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.enrollment.jwtSecretName }}
+                  key: jwt-private.pem
+            {{- end }}
             {{- end }}
           volumeMounts:
             - name: config
