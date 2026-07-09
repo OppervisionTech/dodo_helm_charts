@@ -1,0 +1,18 @@
+# =============================================================================
+# KongConsumer CRDs — identidades reconhecidas pelos plugins de auth do Kong.
+# A credencial (Secret) referenciada em `credentials` é provisionada fora
+# deste chart — ver comentário em values.yaml (consumers.agents).
+# =============================================================================
+
+{{- if .Values.consumers.agents.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: {{ include "aegis.fullname" . }}-agents
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+username: {{ .Values.consumers.agents.username }}
+credentials:
+  - {{ .Values.consumers.agents.jwtCredentialSecretName }}
+{{- end }}

@@ -33,13 +33,15 @@ spec:
     - host: {{ .Values.routes.ingestor.hostname | quote }}
       http:
         paths:
-          - path: {{ .Values.routes.ingestor.path }}
+          {{- range .Values.routes.ingestor.paths }}
+          - path: {{ . }}
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.routes.ingestor.service }}
+                name: {{ $.Values.routes.ingestor.service }}
                 port:
-                  number: {{ .Values.routes.ingestor.port }}
+                  number: {{ $.Values.routes.ingestor.port }}
+          {{- end }}
 {{- end }}
 
 {{- if .Values.routes.enrollment.enabled }}
@@ -72,13 +74,15 @@ spec:
     - host: {{ .Values.routes.enrollment.hostname | quote }}
       http:
         paths:
-          - path: {{ .Values.routes.enrollment.path }}
+          {{- range .Values.routes.enrollment.paths }}
+          - path: {{ . }}
             pathType: Exact
             backend:
               service:
-                name: {{ .Values.routes.enrollment.service }}
+                name: {{ $.Values.routes.enrollment.service }}
                 port:
-                  number: {{ .Values.routes.enrollment.port }}
+                  number: {{ $.Values.routes.enrollment.port }}
+          {{- end }}
 {{- end }}
 
 {{- if .Values.routes.queryApi.enabled }}

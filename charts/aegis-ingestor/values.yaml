@@ -109,6 +109,13 @@ enrollment:
   caSecretName: "aegis-ca-secret"
   # Portal API endpoint for API key verification. Set per environment.
   portalVerifyURL: ""
+  # Name of the K8s Secret holding jwt-private.pem (RSA) — signs the
+  # short-lived JWT agents present to Kong's jwt plugin on the ingestor
+  # route. The matching public key must be registered as a Kong jwt
+  # credential (see aegis-kong chart, consumers.agents). Empty disables JWT
+  # issuance — enrollment still succeeds, but agents can't call jwt-guarded
+  # routes until this is set.
+  jwtSecretName: "aegis-agent-jwt"
 
 networkPolicy:
   enabled: true
