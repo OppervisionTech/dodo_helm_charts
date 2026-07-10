@@ -42,7 +42,15 @@ plugins:
 
 routes:
   ingestor:
-    hostname: "api.staging.oppervision.com.br"
+    # Dedicated hostname — NOT api.staging.oppervision.com.br. ALPN protocol
+    # (h2 vs http/1.1) is negotiated during the TLS handshake, before Kong
+    # can see the request path, so a hostname can only unambiguously serve
+    # one of {https, grpcs}. Sharing api.staging with the https routes
+    # (enrollment, query-api) caused non-deterministic ALPN negotiation —
+    # confirmed live: concurrent connections to the same host/cert got h2 on
+    # some and http/1.1 on others, and gRPC clients (tonic) hard-fail the
+    # connection whenever they land on the latter.
+    hostname: "grpc.staging.oppervision.com.br"
     tls:
       enabled: true
     clusterIssuer: "letsencrypt-staging"

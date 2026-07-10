@@ -167,6 +167,25 @@ plugins:
     enabled: true
 
 # ---------------------------------------------------------------------------
+# KongConsumers — identidades reconhecidas pelo plugin jwt (config acima).
+# O Secret de credencial NÃO é criado por este chart (sem segredo em texto
+# plano aqui) — precisa existir previamente no mesmo namespace, no formato
+# esperado pelo KIC (chave `kongCredType: jwt` + `key`/`algorithm`/
+# `rsa_public_key`). Ver docs/deploy-guide.md.
+# ---------------------------------------------------------------------------
+consumers:
+  # Consumer compartilhado por todos os aegis-agent — o dodo_ingestor assina
+  # os JWTs emitidos no enrollment com `iss` = agents.jwtIssuer, e o plugin
+  # jwt do Kong valida a assinatura contra a rsa_public_key desta credencial.
+  # A identidade por-agent continua garantida pelo client cert mTLS; este JWT
+  # só existe para satisfazer o plugin jwt anexado à rota do ingestor.
+  agents:
+    enabled: true
+    username: aegis-agents
+    jwtIssuer: aegis-agents
+    jwtCredentialSecretName: aegis-agent-jwt-credential
+
+# ---------------------------------------------------------------------------
 # Ingress para rotas do tier de API (ingestor + query-api)
 # Dashboard e portal têm seus próprios Ingress nos respectivos charts.
 # ---------------------------------------------------------------------------
@@ -175,8 +194,16 @@ routes:
   ingestor:
     enabled: true
     hostname: ""  # definido por ambiente (ex: api.oppervision.com.br)
-    path: /ingest
-    service: aegis-ingestor
+    # gRPC despacha pelo :path real do método (/<package>.<Service>/<Method>),
+    # não por um prefixo /ingest arbitrário — precisa de um path por serviço
+    # gRPC registrado no ingestor (ver internal/server/server.go).
+    paths:
+      - /dodo.proto.v1.IngestorService
+      - /dodo.proto.v1.CommandService
+    # aegis-ingestor-grpc, NOT aegis-ingestor: a gRPC-only Service so its
+    # konghq.com/protocol=grpc annotation doesn't also land on the
+    # enrollment port (see aegis-ingestor chart's service.yaml).
+    service: aegis-ingestor-grpc
     port: 50051
     tls:
       enabled: true
@@ -202,7 +229,13 @@ routes:
   enrollment:
     enabled: true
     hostname: ""  # definido por ambiente (ex: api.oppervision.com.br)
-    path: /v1/enroll
+    # /v1/token/refresh reissues the short-lived agent JWT (see
+    # consumers.agents) without touching the mTLS cert; same auth as
+    # /v1/enroll (DODO_API_KEY bearer), so it belongs on this same
+    # no-mTLS/no-jwt-plugin ingress.
+    paths:
+      - /v1/enroll
+      - /v1/token/refresh
     service: aegis-ingestor
     port: 8082
     tls:

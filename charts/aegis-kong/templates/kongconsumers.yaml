@@ -1,0 +1,27 @@
+# =============================================================================
+# KongConsumer CRDs — identidades reconhecidas pelos plugins de auth do Kong.
+# A credencial (Secret) referenciada em `credentials` é provisionada fora
+# deste chart — ver comentário em values.yaml (consumers.agents).
+# =============================================================================
+
+{{- if .Values.consumers.agents.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: {{ include "aegis.fullname" . }}-agents
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    # KongConsumer has no ingressClassName field (unlike Ingress) — KIC only
+    # discovers/syncs it with this legacy class annotation set explicitly.
+    # Confirmed live: without it, the consumer sat in the cluster for 5+
+    # hours (and survived a full controller pod restart) without ever
+    # reaching Kong's actual config — the jwt plugin rejected every request
+    # with "No credentials found for given 'iss'" because Kong had zero
+    # consumers, not because of a JWT content problem.
+    kubernetes.io/ingress.class: kong
+username: {{ .Values.consumers.agents.username }}
+credentials:
+  - {{ .Values.consumers.agents.jwtCredentialSecretName }}
+{{- end }}

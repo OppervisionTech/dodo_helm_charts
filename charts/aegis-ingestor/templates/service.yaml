@@ -19,3 +19,27 @@ spec:
     {{- end }}
   selector:
     {{- include "aegis.selectorLabels" . | nindent 4 }}
+---
+# Separate, gRPC-only Service so Kong's per-Service `konghq.com/protocol`
+# annotation can be `grpc` here without also forcing the enrollment port
+# (plain HTTP/JSON) onto gRPC framing — this KIC version rejects the older
+# per-Ingress KongIngress.proxy.protocol override ("field is no longer
+# supported, use Service's annotations instead"), and a single multi-port
+# Service can only carry one protocol annotation for all its ports.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aegis.fullname" . }}-grpc
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: grpc
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: grpc
+      protocol: {{ .Values.service.protocol }}
+      name: grpc
+  selector:
+    {{- include "aegis.selectorLabels" . | nindent 4 }}
