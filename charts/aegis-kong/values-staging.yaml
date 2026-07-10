@@ -53,15 +53,21 @@ routes:
     hostname: "grpc.staging.oppervision.com.br"
     tls:
       enabled: true
-    clusterIssuer: "letsencrypt-staging"
+    # letsencrypt-staging issues certs untrusted by any real client (curl,
+    # this agent's TLS stack, etc.) — confirmed live: it silently broke
+    # both the grpc route and, separately, the enrollment route below the
+    # same way, each time only noticed because a real client started
+    # failing TLS verification. Real cert, negligible rate-limit risk
+    # (well under 50/week per registered domain).
+    clusterIssuer: "letsencrypt-production"
   queryApi:
     hostname: "api.staging.oppervision.com.br"
     tls:
       enabled: true
-    clusterIssuer: "letsencrypt-staging"
+    clusterIssuer: "letsencrypt-production"
   enrollment:
     enabled: true
     hostname: "api.staging.oppervision.com.br"
     tls:
       enabled: true
-    clusterIssuer: "letsencrypt-staging"
+    clusterIssuer: "letsencrypt-production"
