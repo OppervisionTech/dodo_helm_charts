@@ -64,7 +64,10 @@ networkPolicy:
           port: 5433  # PostgreSQL
     - ports:
         - protocol: TCP
-          port: 3000  # dodo_portal (API key verify)
+          # See values.yaml — NetworkPolicy egress matches the real
+          # destination port (pod's containerPort, 3001), not the
+          # Service port (3000) used in portalVerifyURL above.
+          port: 3001  # dodo_portal container port (Service is 3000 -> targetPort 3001)
 
 aegis:
   agentID: ""  # registrar no portal para habilitar self-monitoring
