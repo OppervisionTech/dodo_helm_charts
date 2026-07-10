@@ -200,7 +200,10 @@ routes:
     paths:
       - /dodo.proto.v1.IngestorService
       - /dodo.proto.v1.CommandService
-    service: aegis-ingestor
+    # aegis-ingestor-grpc, NOT aegis-ingestor: a gRPC-only Service so its
+    # konghq.com/protocol=grpc annotation doesn't also land on the
+    # enrollment port (see aegis-ingestor chart's service.yaml).
+    service: aegis-ingestor-grpc
     port: 50051
     tls:
       enabled: true

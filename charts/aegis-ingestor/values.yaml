@@ -139,7 +139,13 @@ networkPolicy:
           port: 5433  # PostgreSQL
     - ports:
         - protocol: TCP
-          port: 3000  # dodo_portal (API key verify)
+          # NetworkPolicy egress is enforced on the packet's real
+          # destination port, i.e. the pod's containerPort (3001) —
+          # AFTER kube-proxy DNATs the Service's port (3000) to it. Port
+          # 3000 here silently dropped every request to aegis-portal:
+          # the TCP connect() would hang until timeout, always, since
+          # this rule never actually matched the real traffic.
+          port: 3001  # dodo_portal container port (Service is 3000 -> targetPort 3001)
 
 tolerations: []
 nodeSelector: {}
