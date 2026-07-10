@@ -85,7 +85,7 @@ config:
     - {{ . | quote }}
     {{- end }}
   max_age: {{ .Values.plugins.corsApi.maxAge }}
-  credentials: false
+  credentials: {{ .Values.plugins.corsApi.credentials | default false }}
 {{- end }}
 
 {{- if .Values.plugins.securityHeaders.enabled }}
