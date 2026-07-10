@@ -45,13 +45,11 @@ dashboard:
 #
 # Vars com prefixo NEXT_PUBLIC_* são inlineadas pelo webpack do Next.js NO BUILD
 # (DefinePlugin). Setar aqui sozinho NÃO atualiza o bundle JS já compilado —
-# pro browser e pro middleware compilado é o build-arg que vale. Use vars sem
-# prefixo (ex.: PORTAL_URL) quando precisar de override em runtime: o
-# middleware do dashboard prefere PORTAL_URL sobre NEXT_PUBLIC_PORTAL_URL pra
-# justamente permitir override sem rebuild.
+# pro browser e pro middleware compilado é o build-arg que vale. O redirect
+# de auth do middleware (lib/supabase/middleware.ts) só lê
+# NEXT_PUBLIC_PORTAL_URL — não há override sem rebuild pra essa var.
 env:
   QUERY_API_URL: "http://aegis-query-api:8080"
-  PORTAL_URL: https://portal.staging.oppervision.com.br
   NEXT_PUBLIC_PORTAL_URL: https://portal.staging.oppervision.com.br
   NEXT_PUBLIC_DASHBOARD_URL: https://dashboard.staging.oppervision.com.br
   NEXT_PUBLIC_API_URL: https://api.staging.oppervision.com.br
