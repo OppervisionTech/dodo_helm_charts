@@ -160,6 +160,8 @@ plugins:
       - Authorization
       - Content-Type
       - X-Requested-With
+      - X-Org-ID
+    credentials: true
     maxAge: 3600
 
   # Security Headers para dashboard/portal
