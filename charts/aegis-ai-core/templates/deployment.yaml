@@ -21,6 +21,7 @@ spec:
         {{- include "aegis.prometheusAnnotations" . | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
+      terminationGracePeriodSeconds: 45
       serviceAccountName: {{ include "aegis.serviceAccountName" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -64,6 +65,10 @@ spec:
               containerPort: {{ .Values.metrics.port }}
               protocol: TCP
           {{- include "aegis.healthCheck" . | nindent 10 }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "5"]
           {{- if .Values.gpu.enabled }}
           resources:
             requests:
