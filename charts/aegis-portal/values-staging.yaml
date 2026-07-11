@@ -20,11 +20,11 @@ image:
 imagePullSecrets:
   - name: registry-dodo-aegisops-staging
 
-replicaCount: 2
+replicaCount: 1
 
 hpa:
   enabled: true
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 5
 
 resources:
