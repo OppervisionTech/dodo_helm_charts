@@ -138,12 +138,12 @@ O chart `aegis-agent` também é publicado publicamente como artefato OCI no Doc
 repositório:
 
 ```bash
-helm install aegis-agent oci://registry-1.docker.io/oppervisiontech/aegis-agent \
+helm install aegis-agent oci://registry-1.docker.io/enzotrevisan9/aegis-agent \
   --version 0.1.0 \
   --set tls.secretName=<seu-secret-mtls>
 ```
 
-A imagem default (`image.repository`) já aponta para `oppervisiontech/dodo-agent` no
+A imagem default (`image.repository`) já aponta para `enzotrevisan9/dodo-agent` no
 Docker Hub, público. Para publicar uma nova versão, dispare o workflow `helm-publish.yml`
 (GitHub Actions → Helm Publish (OCI) → Run workflow) depois de dar bump no `version` do
 `Chart.yaml`.

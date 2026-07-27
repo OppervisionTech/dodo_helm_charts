@@ -40,5 +40,5 @@ jobs:
       - name: Push chart to Docker Hub
         run: |
           pkg=$(ls ${{ inputs.chart }}-*.tgz)
-          echo "Pushing $pkg to oci://registry-1.docker.io/oppervisiontech"
-          helm push "$pkg" oci://registry-1.docker.io/oppervisiontech
+          echo "Pushing $pkg to oci://registry-1.docker.io/enzotrevisan9"
+          helm push "$pkg" oci://registry-1.docker.io/enzotrevisan9
