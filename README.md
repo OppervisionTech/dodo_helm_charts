@@ -131,6 +131,23 @@ kubectl -n dodo create secret generic aegis-query-api-jwt \
 
 `NEXT_PUBLIC_*` configuradas no `values-staging.yaml` valem **apenas para SSR/API routes do Node**. O bundle JS do client foi inlinado em build time pelo Dockerfile de `dodo_portal` — a imagem em `registry.digitalocean.com/dodo-aegisops-staging/dodo_portal` precisa ser publicada com `ARG NEXT_PUBLIC_API_URL=https://api.staging.oppervision.com.br` etc. Override no Helm sozinho não atualiza o JS do browser.
 
+## Instalação pública (OCI)
+
+O chart `aegis-agent` também é publicado publicamente como artefato OCI no Docker Hub
+(via o workflow `helm-publish.yml`, disparado manualmente). Para instalar sem clonar este
+repositório:
+
+```bash
+helm install aegis-agent oci://registry-1.docker.io/oppervisiontech/aegis-agent \
+  --version 0.1.0 \
+  --set tls.secretName=<seu-secret-mtls>
+```
+
+A imagem default (`image.repository`) já aponta para `oppervisiontech/dodo-agent` no
+Docker Hub, público. Para publicar uma nova versão, dispare o workflow `helm-publish.yml`
+(GitHub Actions → Helm Publish (OCI) → Run workflow) depois de dar bump no `version` do
+`Chart.yaml`.
+
 ## Conventions
 
 - One chart per service (no umbrella chart)
