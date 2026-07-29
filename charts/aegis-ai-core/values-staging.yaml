@@ -72,7 +72,10 @@ networkPolicy:
   egress:
     - ports:
         - protocol: TCP
-          port: 5433  # pgvector / TimescaleDB
+          port: 5432  # TimescaleDB
+    - ports:
+        - protocol: TCP
+          port: 5433  # pgvector (CMDB)
     - ports:
         - protocol: TCP
           port: 6379  # Redis
