@@ -35,6 +35,9 @@ env:
   DODO_ENVIRONMENT: staging
   DODO_LLM_PROVIDER: openrouter
   DODO_LLM_MODEL: nvidia/nemotron-3-super-120b-a12b:free
+  # Sem isso, o IncidentMonitor cria incidentes com org_id='' — invisíveis
+  # pra qualquer org real no dashboard, mesmo com o poller rodando normal.
+  DODO_MONITOR_ORG_ID: "27577b3b-6aaa-48db-b3c9-cba7e8299bd5"  # CoffeeCorp (staging)
   # dodo_ai_core now default-denies openrouter/`:free` models for tool-calling
   # consumers (ChatOps) as a safety control — staging intentionally uses this
   # free model to avoid Anthropic costs, so opt it back in explicitly. The
