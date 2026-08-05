@@ -35,6 +35,12 @@ env:
   DODO_ENVIRONMENT: staging
   DODO_LLM_PROVIDER: openrouter
   DODO_LLM_MODEL: nvidia/nemotron-3-super-120b-a12b:free
+  # dodo_ai_core now default-denies openrouter/`:free` models for tool-calling
+  # consumers (ChatOps) as a safety control — staging intentionally uses this
+  # free model to avoid Anthropic costs, so opt it back in explicitly. The
+  # client-side safety net (max_tokens-without-tool-call detection, real
+  # outer timeout) still applies regardless of this allowlist.
+  DODO_LLM_TOOLCALLING_ALLOWED_MODELS: "nvidia/nemotron-3-super-120b-a12b:free"
 
 featureFlags:
   anomalyDetection: true
@@ -66,7 +72,10 @@ networkPolicy:
   egress:
     - ports:
         - protocol: TCP
-          port: 5433  # pgvector / TimescaleDB
+          port: 5432  # TimescaleDB
+    - ports:
+        - protocol: TCP
+          port: 5433  # pgvector (CMDB)
     - ports:
         - protocol: TCP
           port: 6379  # Redis

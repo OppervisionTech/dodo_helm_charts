@@ -21,6 +21,7 @@ spec:
         {{- include "aegis.prometheusAnnotations" . | nindent 8 }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
+      terminationGracePeriodSeconds: 45
       serviceAccountName: {{ include "aegis.serviceAccountName" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -64,6 +65,10 @@ spec:
               containerPort: {{ .Values.metrics.port }}
               protocol: TCP
           {{- include "aegis.healthCheck" . | nindent 10 }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "5"]
           {{- if .Values.gpu.enabled }}
           resources:
             requests:
@@ -78,9 +83,17 @@ spec:
           {{- end }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
-            {{- include "aegis.dbCredsEnv" (dict "components" (list "pg" "redis")) | nindent 12 }}
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "redis")) | nindent 12 }}
             - name: DODO_DATABASE_URL
               value: "postgresql://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_ai_core"
+            # Shared data stores read by ChatOps tools (get_active_incidents,
+            # get_service_status, query_metrics, ...) — previously never wired
+            # into this deployment, so these settings defaulted to empty and
+            # every ChatOps data-store tool call failed with a connection error.
+            - name: DODO_TIMESCALEDB_DSN
+              value: "postgres://dodo:$(TSDB_PASSWORD)@$(TSDB_HOST):$(TSDB_PORT)/dodo_metrics?sslmode=disable"
+            - name: DODO_POSTGRES_DSN
+              value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
             - name: DODO_REDIS_URL
               value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/0"
           envFrom:
