@@ -46,7 +46,7 @@ featureFlags:
   anomalyDetection: true
   ragEnabled: true
   classificationEnabled: true
-  remediationEnabled: false
+  remediationEnabled: true
 
 aiCore:
   port: 8000
