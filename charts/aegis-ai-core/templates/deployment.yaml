@@ -101,6 +101,11 @@ spec:
             # reads for these exact dimensions in usageMetrics().
             - name: DODO_CLICKHOUSE_DSN
               value: "http://$(CLICKHOUSE_USERNAME):$(CLICKHOUSE_PASSWORD)@$(CLICKHOUSE_HOST):$(CLICKHOUSE_HTTP_PORT)/$(CLICKHOUSE_DB)"
+            # dodo_portal's real Stripe-backed billing data — service-to-service,
+            # authenticated by DODO_PORTAL_INTERNAL_SERVICE_KEY (from appCredentials),
+            # not a user session.
+            - name: DODO_PORTAL_INTERNAL_URL
+              value: "http://aegis-portal:3000"
             {{- if .Values.githubIntegration.tokenKeySecret }}
             # Same AES-256-GCM key dodo_query_api uses to encrypt stored GitHub
             # PATs — referenced from its secret so ChatOps code-analysis tools
