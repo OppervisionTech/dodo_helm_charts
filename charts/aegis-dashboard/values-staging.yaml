@@ -37,12 +37,12 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt-production
     konghq.com/protocols: "https"
     konghq.com/https-redirect-status-code: "301"
-    konghq.com/override: aegis-dashboard-timeouts
-  timeoutOverride:
-    enabled: true
-    connectTimeoutMs: 10000
-    readTimeoutMs: 150000
-    writeTimeoutMs: 150000
+
+service:
+  annotations:
+    konghq.com/connect-timeout: "10000"
+    konghq.com/read-timeout: "150000"
+    konghq.com/write-timeout: "150000"
 
 dashboard:
   queryApiUrl: "http://aegis-query-api:8080"

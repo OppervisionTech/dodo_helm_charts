@@ -56,6 +56,10 @@ metrics:
 service:
   type: ClusterIP
   port: 3000
+  # Kong proxy timeouts (ms) for this service, set via Service-level
+  # annotations (the KongIngress "proxy" field is deprecated on the
+  # installed controller version). Empty by default.
+  annotations: {}
 
 hpa:
   enabled: true
@@ -75,12 +79,6 @@ ingress:
     konghq.com/protocols: "https"
     konghq.com/https-redirect-status-code: "301"
     konghq.com/plugins: "security-headers"
-  # Off by default — only staging currently needs it (see kongingress.yaml).
-  timeoutOverride:
-    enabled: false
-    connectTimeoutMs: 60000
-    readTimeoutMs: 60000
-    writeTimeoutMs: 60000
 
 dashboard:
   port: 3000
