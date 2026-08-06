@@ -195,7 +195,13 @@ networkPolicy:
           port: 6379  # Redis
     - ports:
         - protocol: TCP
-          port: 443   # LLM APIs (Anthropic, external)
+          port: 443   # LLM APIs (Anthropic, external), DigitalOcean billing API
+    - ports:
+        - protocol: TCP
+          port: 8123  # ClickHouse HTTP (usage dimensions for cloud cost allocation)
+    - ports:
+        - protocol: TCP
+          port: 3001  # aegis-portal (internal billing summary endpoint)
 
 tolerations: []
 nodeSelector: {}

@@ -83,7 +83,7 @@ spec:
           {{- end }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
-            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "redis")) | nindent 12 }}
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "redis" "clickhouse")) | nindent 12 }}
             - name: DODO_DATABASE_URL
               value: "postgresql://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_ai_core"
             # Shared data stores read by ChatOps tools (get_active_incidents,
@@ -96,6 +96,11 @@ spec:
               value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
             - name: DODO_REDIS_URL
               value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/0"
+            # Usage dimensions (kubernetesPodsCount, eventsCount from spans) for
+            # cloud-cost proportional allocation — same store query_api already
+            # reads for these exact dimensions in usageMetrics().
+            - name: DODO_CLICKHOUSE_DSN
+              value: "http://$(CLICKHOUSE_USERNAME):$(CLICKHOUSE_PASSWORD)@$(CLICKHOUSE_HOST):$(CLICKHOUSE_HTTP_PORT)/$(CLICKHOUSE_DB)"
             {{- if .Values.githubIntegration.tokenKeySecret }}
             # Same AES-256-GCM key dodo_query_api uses to encrypt stored GitHub
             # PATs — referenced from its secret so ChatOps code-analysis tools
