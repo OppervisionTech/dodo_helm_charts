@@ -170,6 +170,12 @@ secrets:
   dbCredentials: ""
   certificates: ""
 
+# Cross-references dodo_query_api's own secret to reuse its GitHub token
+# encryption key (see templates/deployment.yaml) — empty by default so
+# ChatOps code-analysis tools fail closed until explicitly wired per-env.
+githubIntegration:
+  tokenKeySecret: ""
+
 networkPolicy:
   enabled: true
   allowDNS: true

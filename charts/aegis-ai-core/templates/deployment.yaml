@@ -96,6 +96,17 @@ spec:
               value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
             - name: DODO_REDIS_URL
               value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/0"
+            {{- if .Values.githubIntegration.tokenKeySecret }}
+            # Same AES-256-GCM key dodo_query_api uses to encrypt stored GitHub
+            # PATs — referenced from its secret so ChatOps code-analysis tools
+            # can decrypt and use the org's already-connected token, without a
+            # second copy of the key living in a separate Secret object.
+            - name: DODO_GITHUB_TOKEN_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.githubIntegration.tokenKeySecret }}
+                  key: DODO_QUERY_GITHUB_TOKEN_KEY
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "aegis.fullname" . }}

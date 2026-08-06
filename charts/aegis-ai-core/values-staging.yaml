@@ -65,6 +65,9 @@ health:
 secrets:
   appCredentials: aegis-ai-core-app-secrets
 
+githubIntegration:
+  tokenKeySecret: aegis-query-api-app-secrets
+
 networkPolicy:
   enabled: true
   allowDNS: true
