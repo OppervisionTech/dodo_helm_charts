@@ -176,6 +176,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 9092  # Kafka (native_solution_consumer)
+    - ports:
+        - protocol: TCP
+          port: 443  # GitHub API (token verification for GitHub integration)
 
 tolerations: []
 nodeSelector: {}
