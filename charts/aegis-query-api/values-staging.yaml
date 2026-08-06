@@ -68,7 +68,11 @@ ingress:
 secrets:
   # ES256 (ECDSA P-256 — algoritmo Supabase deste projeto):
   # chave pública em PEM no secret aegis-query-api-jwt (criado manualmente).
-  appCredentials: ""
+  # aegis-query-api-app-secrets (criado manualmente) contém
+  # DODO_QUERY_GITHUB_TOKEN_KEY — chave AES-256 (base64, 32 bytes) usada pra
+  # criptografar o PAT do GitHub armazenado na integração. Sem essa key, o
+  # connectGithub falha fechado (ver internal/secrets).
+  appCredentials: "aegis-query-api-app-secrets"
   jwtPubkey: "aegis-query-api-jwt"
 
 aegis:
