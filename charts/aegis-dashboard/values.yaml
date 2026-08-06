@@ -75,6 +75,12 @@ ingress:
     konghq.com/protocols: "https"
     konghq.com/https-redirect-status-code: "301"
     konghq.com/plugins: "security-headers"
+  # Off by default — only staging currently needs it (see kongingress.yaml).
+  timeoutOverride:
+    enabled: false
+    connectTimeoutMs: 60000
+    readTimeoutMs: 60000
+    writeTimeoutMs: 60000
 
 dashboard:
   port: 3000

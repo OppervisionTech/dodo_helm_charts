@@ -1,0 +1,16 @@
+{{- if .Values.ingress.timeoutOverride.enabled }}
+# Longer proxy timeouts for this ingress — ChatOps code-analysis questions
+# can chain several real GitHub API round-trips + Claude tool-use turns
+# before answering, past Kong's 60s default (observed: a real 3-tool-call
+# question took ~97s server-side and was cut off with a 504 at the default).
+apiVersion: configuration.konghq.com/v1
+kind: KongIngress
+metadata:
+  name: {{ include "aegis.fullname" . }}-timeouts
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+proxy:
+  connect_timeout: {{ .Values.ingress.timeoutOverride.connectTimeoutMs }}
+  read_timeout: {{ .Values.ingress.timeoutOverride.readTimeoutMs }}
+  write_timeout: {{ .Values.ingress.timeoutOverride.writeTimeoutMs }}
+{{- end }}
