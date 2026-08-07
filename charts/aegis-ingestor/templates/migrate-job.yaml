@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "aegis.fullname" . }}-migrate
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        {{- include "aegis.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aegis.serviceAccountName" . }}
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          {{- include "aegis.image" . | nindent 10 }}
+          args: ["--migrate"]
+          env:
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "redis" "pg" "kafka")) | nindent 12 }}
+            - name: INGESTOR_REDIS_URL
+              value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)"
+            - name: INGESTOR_POSTGRES_DSN
+              value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
+            - name: INGESTOR_KAFKA_BROKERS
+              value: "$(KAFKA_BOOTSTRAP)"
