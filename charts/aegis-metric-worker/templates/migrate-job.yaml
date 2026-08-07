@@ -16,6 +16,10 @@ spec:
         {{- include "aegis.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "aegis.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       restartPolicy: Never
       containers:
         - name: migrate
