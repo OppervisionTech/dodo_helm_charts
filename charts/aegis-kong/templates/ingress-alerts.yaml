@@ -1,0 +1,46 @@
+# =============================================================================
+# Ingress para os webhooks inbound do dodo_alerts (ChatOps via Slack/Teams).
+# Gerenciado pelo Kong Ingress Controller (KIC).
+# TLS provisionado automaticamente pelo cert-manager.
+# =============================================================================
+
+{{- if .Values.routes.alerts.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aegis.fullname" . }}-alerts
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "https"
+    konghq.com/strip-path: "false"
+    konghq.com/plugins: "rate-limiting-alerts"
+    {{- if .Values.routes.alerts.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.routes.alerts.clusterIssuer | default "letsencrypt-production" | quote }}
+    {{- end }}
+    {{- with .Values.routes.alerts.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: kong
+  {{- if .Values.routes.alerts.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.routes.alerts.hostname | quote }}
+      secretName: {{ .Values.routes.alerts.tls.secretName | default (printf "%s-alerts-tls" (include "aegis.fullname" .)) }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.routes.alerts.hostname | quote }}
+      http:
+        paths:
+          {{- range .Values.routes.alerts.paths }}
+          - path: {{ . }}
+            pathType: Exact
+            backend:
+              service:
+                name: {{ $.Values.routes.alerts.service }}
+                port:
+                  number: {{ $.Values.routes.alerts.port }}
+          {{- end }}
+{{- end }}
