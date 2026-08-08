@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    {{- include "aegis.annotations" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aegis.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aegis.labels" . | nindent 8 }}
+      annotations:
+        {{- include "aegis.prometheusAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aegis.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- include "aegis.podSecurityContext" . | nindent 6 }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: worker
+          {{- include "aegis.image" . | nindent 10 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.worker.port }}
+              protocol: TCP
+          {{- include "aegis.healthCheck" . | nindent 10 }}
+          {{- include "aegis.resourceLimits" . | nindent 10 }}
+          {{- include "aegis.containerSecurityContext" . | nindent 10 }}
+          env:
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "redis" "kafka")) | nindent 12 }}
+            - name: DODO_TIMESCALEDB_DSN
+              value: "postgres://dodo:$(TSDB_PASSWORD)@$(TSDB_HOST):$(TSDB_PORT)/dodo_metrics?sslmode=disable"
+            - name: DODO_REDIS_URL
+              value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)/0"
+            - name: DODO_KAFKA_BROKERS
+              value: "$(KAFKA_BOOTSTRAP)"
+            - name: DODO_ALERT_TOPIC
+              value: {{ .Values.worker.alertTopic | quote }}
+            - name: DODO_CERT_METRIC_NAME
+              value: {{ .Values.worker.metricName | quote }}
+            - name: DODO_CERT_THRESHOLDS_DAYS
+              value: {{ .Values.worker.thresholdsDays | quote }}
+            - name: DODO_POLL_INTERVAL
+              value: {{ .Values.worker.pollInterval | quote }}
+            - name: DODO_CERT_STALE_AFTER
+              value: {{ .Values.worker.staleAfter | quote }}
+            - name: DODO_HTTP_PORT
+              value: {{ .Values.worker.port | quote }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

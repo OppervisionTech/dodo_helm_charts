@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-cert-worker
+description: DoDo AegisOps Cert Worker — TLS certificate expiry alerting from cert.days_until_expiry metrics
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"
