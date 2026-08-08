@@ -61,9 +61,6 @@ spec:
             - name: http
               containerPort: {{ .Values.aiCore.port }}
               protocol: TCP
-            - name: metrics
-              containerPort: {{ .Values.metrics.port }}
-              protocol: TCP
           {{- include "aegis.healthCheck" . | nindent 10 }}
           lifecycle:
             preStop:
