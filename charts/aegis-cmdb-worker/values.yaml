@@ -1,0 +1,101 @@
+nameOverride: ""
+fullnameOverride: ""
+component: cmdb-worker
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-cmdb-worker
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 10
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: true
+  port: 8080  # app's METRICS_PORT (Prometheus); .env: METRICS_PORT=8080
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8081  # app's HEALTH_PORT (probes); .env: HEALTH_PORT=8081
+
+worker:
+  name: cmdb-worker
+  port: 8081  # health endpoint; .env: HEALTH_PORT=8081 (METRICS lives on 8080)
+
+# Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
+# DB endpoints (host/port/password) vêm do Secret "dodo-db-credentials" do cluster
+# via valueFrom.secretKeyRef no deployment.yaml.
+env:
+  KAFKA_TOPICS: host-inventory
+  KAFKA_GROUP_ID: cmdb-worker-group
+  KAFKA_MAX_RETRIES: "3"
+  KAFKA_DLQ_ENABLED: "true"
+  WORKER_CONCURRENCY: "1"
+  HEALTH_PORT: "8081"
+  METRICS_PORT: "8080"
+  SHUTDOWN_TIMEOUT: 30s
+  LOG_LEVEL: info
+
+secrets:
+  appCredentials: ""
+  credentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress: []
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 9092  # Kafka
+    - ports:
+        - protocol: TCP
+          port: 5433  # PostgreSQL CMDB
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}
+
+aegis:
+  agentID: ""  # registrar no portal para habilitar self-monitoring
+  ingestorAddr: "aegis-ingestor:50051"
+  environment: "production"
