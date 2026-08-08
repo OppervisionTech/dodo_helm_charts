@@ -1,0 +1,16 @@
+# =============================================================================
+# aegis-cert-worker — Production Environment Values
+# =============================================================================
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    cpu: 150m
+    memory: 128Mi
+
+worker:
+  pollInterval: 10m

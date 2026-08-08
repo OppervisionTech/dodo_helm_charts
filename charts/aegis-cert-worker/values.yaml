@@ -1,0 +1,88 @@
+nameOverride: ""
+fullnameOverride: ""
+component: cert-worker
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-cert-worker
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 64Mi
+  limits:
+    cpu: 150m
+    memory: 128Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 10
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: true
+  port: 8080
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8080
+
+worker:
+  port: 8080
+  # cert.days_until_expiry already lands in TimescaleDB via dodo_agent's
+  # certs collector -> dodo_metric_worker, today, with no cert_worker
+  # involved in ingestion — this worker only reads it and alerts.
+  metricName: cert.days_until_expiry
+  thresholdsDays: "30,14,7,1"
+  pollInterval: 10m
+  staleAfter: 3h
+  alertTopic: alert-events
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress: []
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 9092  # Kafka
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis
+    - ports:
+        - protocol: TCP
+          port: 5432  # TimescaleDB
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

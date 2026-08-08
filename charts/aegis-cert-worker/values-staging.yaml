@@ -1,0 +1,24 @@
+# =============================================================================
+# aegis-cert-worker — Staging Environment Values
+# =============================================================================
+
+image:
+  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_cert_worker
+  tag: "latest"
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: registry-dodo-aegisops-staging
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 96Mi
+
+worker:
+  pollInterval: 5m
