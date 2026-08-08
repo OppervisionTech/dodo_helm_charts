@@ -138,6 +138,16 @@ plugins:
     secondLimit: 50
     policy: local
 
+  # Rate limiting para os webhooks inbound do dodo_alerts (Slack slash
+  # commands + Teams messages). Slack retries a request up to 3x if it
+  # doesn't get an ack fast enough — o limite aqui é folgado o bastante
+  # pra absorver isso sem bloquear uso normal.
+  rateLimitingAlerts:
+    enabled: true
+    minuteLimit: 120
+    secondLimit: 10
+    policy: local
+
   # JWT Authentication
   jwtAuth:
     enabled: true
@@ -240,6 +250,23 @@ routes:
       - /v1/token/refresh
     service: aegis-ingestor
     port: 8082
+    tls:
+      enabled: true
+      secretName: ""  # cert-manager provisiona automaticamente
+
+  # Rota HTTPS para os webhooks inbound do dodo_alerts (Slack slash commands
+  # + Teams Bot Framework messages). Sem JWT/CORS: Slack e Teams autenticam
+  # com o próprio esquema deles (HMAC v0 / Bearer JWT do Bot Framework),
+  # verificado dentro do handler — não pelo Kong. Só expõe os dois paths de
+  # webhook, não o service inteiro (/metrics, /healthz seguem internos).
+  alerts:
+    enabled: true
+    hostname: ""  # definido por ambiente (ex: alerts.oppervision.com.br)
+    paths:
+      - /webhooks/slack/commands
+      - /webhooks/teams/messages
+    service: aegis-alerts
+    port: 8084
     tls:
       enabled: true
       secretName: ""  # cert-manager provisiona automaticamente
