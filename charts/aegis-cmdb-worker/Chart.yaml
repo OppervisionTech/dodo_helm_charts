@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-cmdb-worker
+description: DoDo AegisOps CMDB Worker — Upserts host-inventory from Kafka to PostgreSQL CMDB
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"

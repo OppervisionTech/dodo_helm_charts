@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    {{- include "aegis.annotations" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aegis.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aegis.labels" . | nindent 8 }}
+      annotations:
+        {{- include "aegis.prometheusAnnotations" . | nindent 8 }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "aegis.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- include "aegis.podSecurityContext" . | nindent 6 }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: worker
+          {{- include "aegis.image" . | nindent 10 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.worker.port }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+              protocol: TCP
+          {{- include "aegis.healthCheck" . | nindent 10 }}
+          {{- include "aegis.resourceLimits" . | nindent 10 }}
+          {{- include "aegis.containerSecurityContext" . | nindent 10 }}
+          env:
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "pg" "kafka")) | nindent 12 }}
+            - name: POSTGRES_DSN
+              value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
+            - name: KAFKA_BROKERS
+              value: "$(KAFKA_BOOTSTRAP)"
+            {{- if .Values.aegis.agentID }}
+            - name: AEGIS_AGENT_ID
+              value: {{ .Values.aegis.agentID | quote }}
+            - name: AEGIS_INGESTOR_ADDR
+              value: {{ .Values.aegis.ingestorAddr | quote }}
+            - name: AEGIS_ENVIRONMENT
+              value: {{ .Values.aegis.environment | quote }}
+            {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "aegis.fullname" . }}
+            {{- if .Values.secrets.appCredentials }}
+            - secretRef:
+                name: {{ .Values.secrets.appCredentials }}
+            {{- end }}
+            {{- if .Values.secrets.credentials }}
+            - secretRef:
+                name: {{ .Values.secrets.credentials }}
+            {{- end }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
