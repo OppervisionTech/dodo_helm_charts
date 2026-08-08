@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  DODO_KAFKA_TOPIC: {{ .Values.worker.kafkaTopic | quote }}
+  DODO_KAFKA_GROUP_ID: {{ .Values.worker.kafkaGroupId | quote }}
+  DODO_ALERT_TOPIC: {{ .Values.worker.alertTopic | quote }}
+  DODO_CORRELATION_WINDOW_SECONDS: {{ .Values.worker.correlationWindowSeconds | quote }}
+  DODO_HTTP_PORT: {{ .Values.worker.port | quote }}
+  DODO_LOG_LEVEL: {{ .Values.worker.logLevel | quote }}
