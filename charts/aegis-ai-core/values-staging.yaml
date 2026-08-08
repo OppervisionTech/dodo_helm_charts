@@ -54,6 +54,9 @@ featureFlags:
 aiCore:
   port: 8000
 
+metrics:
+  port: 8000
+
 service:
   port: 8000
 

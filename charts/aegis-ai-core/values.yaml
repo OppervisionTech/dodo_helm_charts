@@ -56,7 +56,11 @@ containerSecurityContext:
 
 metrics:
   enabled: true
-  port: 9090
+  # Must match aiCore.port — the app serves /metrics on its one HTTP port
+  # (uvicorn), there is no separate metrics listener. Override alongside
+  # aiCore.port in any values-<env>.yaml that changes it (see
+  # values-staging.yaml).
+  port: 8080
   path: /metrics
 
 service:
