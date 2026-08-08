@@ -1,0 +1,82 @@
+nameOverride: ""
+fullnameOverride: ""
+component: security-orchestrator
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-security-orchestrator
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 10
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: true
+  port: 8080
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8080
+
+worker:
+  port: 8080
+  kafkaTopic: security-events
+  kafkaGroupId: security-orchestrator-group
+  alertTopic: alert-events
+  correlationWindowSeconds: "300"
+  logLevel: info
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress: []
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 9092  # Kafka
+    - ports:
+        - protocol: TCP
+          port: 8123  # ClickHouse HTTP
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

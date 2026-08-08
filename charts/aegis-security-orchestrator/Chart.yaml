@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-security-orchestrator
+description: DoDo AegisOps Security Orchestrator — Sigma-style detection and kill-chain correlation
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"
