@@ -137,7 +137,15 @@ env:
   DODO_QUERY_LOG_LEVEL: info
   DODO_QUERY_LOG_FORMAT: json
   DODO_QUERY_CORS_ORIGINS: "*"
-  DODO_AI_CORE_URL: http://aegis-ai-core:8080
+  # Must match aegis-ai-core's actual container port (its Dockerfile
+  # hardcodes uvicorn to 8000 in every environment; the chart's own base
+  # values.yaml default of 8080 doesn't match it — staging's
+  # values-staging.yaml overrides aiCore.port/service.port to 8000 to
+  # compensate, but this URL and the NetworkPolicy egress rule below were
+  # never updated to match, so every call here silently failed at the
+  # network level (wrong port + NetworkPolicy blocking the right one)
+  # regardless of anything business_vision itself did.
+  DODO_AI_CORE_URL: http://aegis-ai-core:8000
   PANDAPROXY_URL: ""
 
 # Secrets externos referenciados por nome (não criados pelo chart).
@@ -172,7 +180,7 @@ networkPolicy:
           port: 6379  # Redis
     - ports:
         - protocol: TCP
-          port: 8080  # aegis-ai-core (in-cluster)
+          port: 8000  # aegis-ai-core (in-cluster) — must match DODO_AI_CORE_URL above
     - ports:
         - protocol: TCP
           port: 50051  # aegis-ingestor (gRPC self-monitoring)
