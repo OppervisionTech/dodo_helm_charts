@@ -60,12 +60,12 @@ metrics:
   # (uvicorn), there is no separate metrics listener. Override alongside
   # aiCore.port in any values-<env>.yaml that changes it (see
   # values-staging.yaml).
-  port: 8080
+  port: 8000
   path: /metrics
 
 service:
   type: ClusterIP
-  port: 8080
+  port: 8000
 
 # GPU configuration
 gpu:
@@ -108,7 +108,7 @@ modelCache:
 
 # AI Core configuration
 aiCore:
-  port: 8080
+  port: 8000
 
 # Variáveis de ambiente injetadas via ConfigMap (não-sensíveis).
 # DB endpoints (pg + redis) vêm do Secret "dodo-db-credentials" do cluster
@@ -186,7 +186,7 @@ networkPolicy:
   ingress:
     - ports:
         - protocol: TCP
-          port: 8080
+          port: 8000
   egress:
     - ports:
         - protocol: TCP
