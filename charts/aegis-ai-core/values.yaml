@@ -205,7 +205,7 @@ networkPolicy:
           port: 8123  # ClickHouse HTTP (usage dimensions for cloud cost allocation)
     - ports:
         - protocol: TCP
-          port: 3001  # aegis-portal (internal billing summary endpoint)
+          port: 3000  # aegis-portal (internal billing summary endpoint) — was 3001, aegis-portal's Service actually listens on 3000
 
 tolerations: []
 nodeSelector: {}

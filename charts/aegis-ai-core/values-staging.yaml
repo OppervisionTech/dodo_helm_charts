@@ -91,3 +91,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 443   # Anthropic API
+    - ports:
+        - protocol: TCP
+          port: 8123  # ClickHouse HTTP (SLO SLI queries, cloud cost allocation)
+    - ports:
+        - protocol: TCP
+          port: 3000  # aegis-portal (internal billing summary endpoint)
