@@ -201,7 +201,7 @@ Parameters (via .Values.serviceAccount):
 ----------------------------------------------------------------------
 */}}
 {{- define "aegis.serviceAccount" -}}
-{{- if .Values.serviceAccount.create | default true }}
+{{- if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -222,7 +222,7 @@ aegis.serviceAccountName — Returns the ServiceAccount name to use.
 ----------------------------------------------------------------------
 */}}
 {{- define "aegis.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create | default true }}
+{{- if .Values.serviceAccount.create }}
 {{- .Values.serviceAccount.name | default (include "aegis.fullname" .) }}
 {{- else }}
 {{- .Values.serviceAccount.name | default "default" }}
@@ -255,7 +255,7 @@ Follows CIS Kubernetes Benchmark:
 */}}
 {{- define "aegis.containerSecurityContext" -}}
 securityContext:
-  readOnlyRootFilesystem: {{ .Values.containerSecurityContext.readOnlyRootFilesystem | default true }}
+  readOnlyRootFilesystem: {{ .Values.containerSecurityContext.readOnlyRootFilesystem }}
   allowPrivilegeEscalation: false
   runAsNonRoot: true
   capabilities:
@@ -279,7 +279,7 @@ Parameters (via .Values.networkPolicy):
 ----------------------------------------------------------------------
 */}}
 {{- define "aegis.networkPolicy" -}}
-{{- if .Values.networkPolicy.enabled | default true }}
+{{- if .Values.networkPolicy.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -298,7 +298,7 @@ spec:
     {{- toYaml .Values.networkPolicy.ingress | nindent 4 }}
   {{- end }}
   egress:
-    {{- if .Values.networkPolicy.allowDNS | default true }}
+    {{- if .Values.networkPolicy.allowDNS }}
     # Always allow DNS
     - to: []
       ports:
@@ -337,7 +337,7 @@ Parameters (via .Values.metrics):
 ----------------------------------------------------------------------
 */}}
 {{- define "aegis.prometheusAnnotations" -}}
-{{- if .Values.metrics.enabled | default true }}
+{{- if .Values.metrics.enabled }}
 prometheus.io/scrape: "true"
 prometheus.io/port: {{ .Values.metrics.port | default "9090" | quote }}
 prometheus.io/path: {{ .Values.metrics.path | default "/metrics" | quote }}
