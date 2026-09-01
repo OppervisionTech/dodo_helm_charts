@@ -1,0 +1,77 @@
+# Reference RBAC manifest for dodo_ai_core remediation credentials
+# ===================================================================
+#
+# NOT part of this chart's rendered output — deliberately NOT under
+# templates/, since `helm install`/`upgrade` on this chart deploys
+# dodo_ai_core itself into OUR infra, not the customer's cluster. This
+# file is documentation the customer downloads and applies to THEIR OWN
+# cluster with their own kubectl access, then pastes the resulting
+# kubeconfig into the portal's Settings > Integrations > Remediação
+# Automática screen. We never touch the customer's cluster directly.
+#
+# Refs docs/plans/2026-08-26-remediacao-automatica-ia.md (Card 2/A.8) and
+# dodo_ai_core's services/executor/{kubernetes,rollback,config_patch}.py,
+# which are the only things that ever call these permissions:
+#   - rolling_restart/scale: patch on deployments
+#   - node_drain: patch on nodes (cordon) + create on pods/eviction
+#   - rollback: patch on deployments (same as rolling_restart)
+#   - config_patch: patch on configmaps
+#   - all of the above: get/list/watch on pods, to find what to touch
+#
+# NOT granted here, deliberately: delete on anything, RBAC/secrets access,
+# any verb beyond what's listed above. If a future executor needs a new
+# verb, extend this file and the ClusterRole together — never widen with
+# cluster-admin as a shortcut.
+#
+# Usage:
+#   1. kubectl apply -f remediation-rbac-template.yaml
+#   2. kubectl create token dodo-remediation -n dodo-remediation --duration=87600h
+#      (or, for a long-lived token compatible with older clusters, create a
+#      Secret of type kubernetes.io/service-account-token bound to this SA)
+#   3. Build a kubeconfig using that token + your cluster's API server URL
+#      and CA data, and paste it into the portal.
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dodo-remediation
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dodo-remediation
+  namespace: dodo-remediation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dodo-remediation
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups: [""]
+    resources: ["pods/eviction"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dodo-remediation
+subjects:
+  - kind: ServiceAccount
+    name: dodo-remediation
+    namespace: dodo-remediation
+roleRef:
+  kind: ClusterRole
+  name: dodo-remediation
+  apiGroup: rbac.authorization.k8s.io
