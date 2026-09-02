@@ -116,6 +116,7 @@ aiCore:
 env:
   DODO_ENVIRONMENT: development
   DODO_LOG_LEVEL: INFO
+  ALERT_KAFKA_TOPIC: "alert-events"
   DODO_API_HOST: 0.0.0.0
   DODO_DB_POOL_MIN: "2"
   DODO_DB_POOL_MAX: "10"

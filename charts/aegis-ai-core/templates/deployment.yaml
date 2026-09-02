@@ -80,7 +80,7 @@ spec:
           {{- end }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
-            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "redis" "clickhouse")) | nindent 12 }}
+            {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "redis" "clickhouse" "kafka")) | nindent 12 }}
             - name: DODO_DATABASE_URL
               value: "postgresql://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_ai_core"
             # Shared data stores read by ChatOps tools (get_active_incidents,
@@ -103,6 +103,8 @@ spec:
             # not a user session.
             - name: DODO_PORTAL_INTERNAL_URL
               value: "http://aegis-portal:3000"
+            - name: KAFKA_BROKERS
+              value: "$(KAFKA_BOOTSTRAP)"
             {{- if .Values.githubIntegration.tokenKeySecret }}
             # Same AES-256-GCM key dodo_query_api uses to encrypt stored GitHub
             # PATs — referenced from its secret so ChatOps code-analysis tools
