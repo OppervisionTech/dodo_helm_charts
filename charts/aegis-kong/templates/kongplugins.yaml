@@ -63,6 +63,21 @@ config:
   policy: {{ .Values.plugins.rateLimitingAlerts.policy }}
 {{- end }}
 
+{{- if .Values.plugins.rateLimitingHealth.enabled }}
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rate-limiting-health
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+plugin: rate-limiting
+config:
+  minute: {{ .Values.plugins.rateLimitingHealth.minuteLimit }}
+  second: {{ .Values.plugins.rateLimitingHealth.secondLimit }}
+  policy: {{ .Values.plugins.rateLimitingHealth.policy }}
+{{- end }}
+
 {{- if .Values.plugins.jwtAuth.enabled }}
 ---
 apiVersion: configuration.konghq.com/v1

@@ -17,6 +17,10 @@ spec:
       protocol: TCP
       name: enrollment
     {{- end }}
+    - port: {{ .Values.health.liveness.port }}
+      targetPort: health
+      protocol: TCP
+      name: health
   selector:
     {{- include "aegis.selectorLabels" . | nindent 4 }}
 ---
