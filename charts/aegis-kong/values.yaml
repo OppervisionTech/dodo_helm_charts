@@ -148,6 +148,16 @@ plugins:
     secondLimit: 10
     policy: local
 
+  # Rate limiting para as rotas públicas de /healthz (ingestor + alerts)
+  # usadas pelo monitor externo de uptime (BetterStack/UptimeRobot, check
+  # a cada 60s). Limite folgado só pra evitar abuso do endpoint público
+  # sem dado sensível, não pra restringir o uso normal do monitor.
+  rateLimitingHealth:
+    enabled: true
+    minuteLimit: 60
+    secondLimit: 5
+    policy: local
+
   # JWT Authentication
   jwtAuth:
     enabled: true
@@ -265,6 +275,36 @@ routes:
     paths:
       - /webhooks/slack/commands
       - /webhooks/teams/messages
+    service: aegis-alerts
+    port: 8084
+    tls:
+      enabled: true
+      secretName: ""  # cert-manager provisiona automaticamente
+
+  # Rota HTTPS só para GET /healthz do dodo_ingestor, pra monitoramento
+  # externo de uptime (BetterStack/UptimeRobot). Aponta pra porta HTTP
+  # dedicada de health (8080, INGESTOR_HEALTH_PORT), NÃO pro listener
+  # gRPC/mTLS de ingestão (porta 50051, ver rota `ingestor` acima) — o
+  # handler já existe (internal/health/health.go), só faltava expor.
+  # Sem JWT/mTLS: é um endpoint público de liveness, sem dado sensível.
+  ingestorHealth:
+    enabled: true
+    hostname: ""  # definido por ambiente (ex: api.oppervision.com.br)
+    paths:
+      - /healthz
+    service: aegis-ingestor
+    port: 8080
+    tls:
+      enabled: true
+      secretName: ""  # cert-manager provisiona automaticamente
+
+  # Rota HTTPS só para GET /healthz do dodo_alerts, mesmo motivo acima.
+  # /metrics segue interno de propósito (não é liveness pública).
+  alertsHealth:
+    enabled: true
+    hostname: ""  # definido por ambiente (ex: alerts.oppervision.com.br)
+    paths:
+      - /healthz
     service: aegis-alerts
     port: 8084
     tls:
