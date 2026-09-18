@@ -1,0 +1,133 @@
+nameOverride: ""
+fullnameOverride: ""
+component: portal-bff
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-portal-bff
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 10
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: false
+  port: 9090
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8081
+
+# Interno apenas — sem Ingress/Kong. Só dodo_portal (proxy de auth/billing) e
+# dodo_ingestor (verificação de API key) falam com este serviço, ambos
+# in-cluster. Ver docs/plans/2026-09-06-portal-bff-fase1.md.
+ingress:
+  enabled: false
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+portalBff:
+  port: 8081
+  # Supabase project — usado só para validar o access token que o dodo_portal
+  # encaminha via Authorization: Bearer. Não são segredos (mesmos valores
+  # públicos já usados pelo NEXT_PUBLIC_SUPABASE_* do aegis-portal).
+  supabase:
+    projectUrl: ""
+    publishableKey: ""
+
+# Variáveis não-sensíveis injetadas via ConfigMap.
+env:
+  PORTAL_QUERY_API_URL: http://aegis-query-api:8080
+  # URL pública do dodo_portal (não deste serviço) — usada para montar
+  # return_url do Stripe e o redirect_uri do OAuth do Slack, que precisam
+  # bater exatamente com o que está registrado no Stripe/Slack.
+  PORTAL_APP_URL: ""
+  # Client ID do app Slack — não é segredo (fica visível na URL de
+  # autorização OAuth). SLACK_CLIENT_SECRET fica no Secret abaixo.
+  SLACK_CLIENT_ID: ""
+
+# Secret externo (não criado pelo chart) com DATABASE_URL, DIRECT_URL,
+# STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET_SHADOW, SUPABASE_SERVICE_ROLE_KEY,
+# SLACK_CLIENT_SECRET, CRON_SECRET, INTERNAL_SERVICE_TOKEN — aponta para o
+# MESMO banco do aegis-portal durante a transição (Fases 1-3 do roadmap).
+# STRIPE_WEBHOOK_SECRET_SHADOW é o signing secret do endpoint webhook
+# SEPARADO registrado no Stripe para o modo shadow (Fase 2) — não é o mesmo
+# secret usado pelo webhook ao vivo do aegis-portal. Pipeline do repo
+# dodo_portal_bff cria/atualiza.
+secrets:
+  appCredentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8081
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 443   # Supabase REST (token validation) + Stripe (external HTTPS)
+    - ports:
+        - protocol: TCP
+          port: 6543  # Supabase pooler — Prisma runtime queries
+    - ports:
+        - protocol: TCP
+          port: 5432  # Supabase direct — used only by the migrate-job
+    - ports:
+        - protocol: TCP
+          port: 8080  # aegis-query-api (in-cluster) — usage metrics
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis (droplet) — shared rate limiter
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

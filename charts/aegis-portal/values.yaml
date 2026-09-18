@@ -94,10 +94,17 @@ env:
   ALLOWED_ORIGINS: http://localhost:3000
   NEXT_PUBLIC_API_URL: http://localhost:4000
   PORTAL_QUERY_API_URL: http://aegis-query-api:8080
+  # Fase 3 cutover: dodo_portal no longer touches Prisma/Stripe/Redis
+  # directly — every route under app/api/** is a thin proxy to this
+  # service now (see dodo_portal/src/lib/portal-bff.ts).
+  PORTAL_BFF_INTERNAL_URL: http://aegis-portal-bff:8081
 
-# Secrets externos referenciados por nome (não criados pelo chart).
-#   appCredentials — Secret com SUPABASE_SERVICE_ROLE_KEY, STRIPE_*, DATABASE_URL.
-#                    Pipeline do repo dodo_portal cria/atualiza este Secret.
+# Secret externo referenciado por nome (não criado pelo chart).
+#   appCredentials — só NEXT_PUBLIC_SUPABASE_* (anon key, para o próprio
+#                    login/sessão do usuário) permanece necessário aqui.
+#                    SUPABASE_SERVICE_ROLE_KEY, STRIPE_*, DATABASE_URL
+#                    migraram para o Secret do aegis-portal-bff — não são
+#                    mais lidos por este serviço.
 secrets:
   appCredentials: ""
 
@@ -111,19 +118,13 @@ networkPolicy:
   egress:
     - ports:
         - protocol: TCP
-          port: 8080  # query-api (in-cluster)
+          port: 8080  # query-api (in-cluster) — não migrado ainda, chamadas diretas remanescentes
     - ports:
         - protocol: TCP
-          port: 6379  # Redis (droplet)
+          port: 8081  # aegis-portal-bff (in-cluster) — todo o restante das rotas
     - ports:
         - protocol: TCP
-          port: 443   # Supabase REST + Stripe (external HTTPS)
-    - ports:
-        - protocol: TCP
-          port: 6543  # Supabase pooler — Prisma runtime queries
-    - ports:
-        - protocol: TCP
-          port: 5432  # Supabase direct — Prisma migrations on boot
+          port: 443   # Supabase Auth (login/sessão do usuário via supabase-ssr)
 
 tolerations: []
 nodeSelector: {}

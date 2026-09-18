@@ -1,0 +1,23 @@
+# =============================================================================
+# aegis-portal-bff — Production Environment Values
+# =============================================================================
+
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  PORTAL_APP_URL: "https://portal.oppervision.com.br"
+  SLACK_CLIENT_ID: ""
+
+secrets:
+  appCredentials: aegis-portal-bff-app-secrets

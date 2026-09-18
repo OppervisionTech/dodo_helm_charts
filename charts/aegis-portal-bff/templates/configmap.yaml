@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aegis.fullname" . }}
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+data:
+  PORT: {{ .Values.portalBff.port | quote }}
+  SUPABASE_URL: {{ .Values.portalBff.supabase.projectUrl | quote }}
+  SUPABASE_PUBLISHABLE_KEY: {{ .Values.portalBff.supabase.publishableKey | quote }}
+  {{- range $k, $v := .Values.env }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}

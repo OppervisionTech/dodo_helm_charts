@@ -1,0 +1,41 @@
+# =============================================================================
+# aegis-portal-bff — Staging Environment Values
+# =============================================================================
+# Pré-requisitos no cluster antes do helm install:
+#   1. Secret "aegis-portal-bff-app-secrets" com DATABASE_URL, DIRECT_URL,
+#      STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET_SHADOW, SUPABASE_SERVICE_ROLE_KEY,
+#      SLACK_CLIENT_SECRET, CRON_SECRET, INTERNAL_SERVICE_TOKEN — DATABASE_URL/
+#      DIRECT_URL apontam pro MESMO banco Supabase do aegis-portal (pipeline
+#      do repo dodo_portal_bff cria/atualiza).
+# =============================================================================
+
+image:
+  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_portal_bff
+  tag: "latest"
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: registry-dodo-aegisops-staging
+
+replicaCount: 1
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+
+portalBff:
+  supabase:
+    projectUrl: "https://vnkhsfwxqkyvjyncmvrt.supabase.co"
+    publishableKey: "sb_publishable_5tCYIS89vr7JgrpkAK6EvQ_tj3FGUcf"
+
+env:
+  PORTAL_APP_URL: "https://portal.staging.oppervision.com.br"
+  SLACK_CLIENT_ID: ""
+
+secrets:
+  appCredentials: aegis-portal-bff-app-secrets
+
+health:
+  liveness:
+    initialDelay: 30

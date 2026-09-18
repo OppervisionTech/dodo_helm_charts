@@ -1,0 +1,27 @@
+# =============================================================================
+# aegis-dashboard-bff — Staging Environment Values
+# =============================================================================
+
+image:
+  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_dashboard_bff
+  tag: "latest"
+  pullPolicy: Always
+
+imagePullSecrets:
+  - name: registry-dodo-aegisops-staging
+
+replicaCount: 1
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+
+dashboardBff:
+  supabase:
+    projectUrl: "https://vnkhsfwxqkyvjyncmvrt.supabase.co"
+    publishableKey: "sb_publishable_5tCYIS89vr7JgrpkAK6EvQ_tj3FGUcf"
+
+health:
+  liveness:
+    initialDelay: 15

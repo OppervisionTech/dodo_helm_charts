@@ -92,7 +92,11 @@ dashboard:
 # do dodo_dashboard — sobrescrever aqui sozinho NÃO atualiza o que roda no client.
 # Para isso, o pipeline do dodo_dashboard precisa publicar imagem com os build-args
 # corretos (ARG NEXT_PUBLIC_*).
-env: {}
+env:
+  # dashboard-bff (Fase 4) — chatops e SLO delegam a checagem de membership
+  # e o forward pro AI Core aqui, em vez de reimplementar cada um a sua
+  # própria versão da mesma checagem.
+  DASHBOARD_BFF_INTERNAL_URL: http://aegis-dashboard-bff:8082
 
 networkPolicy:
   enabled: true
@@ -116,6 +120,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 443   # HTTPS — Supabase Auth + APIs externas
+    - ports:
+        - protocol: TCP
+          port: 8082  # aegis-dashboard-bff (in-cluster) — chatops + SLO
 
 tolerations: []
 nodeSelector: {}

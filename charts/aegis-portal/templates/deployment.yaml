@@ -44,10 +44,6 @@ spec:
           {{- include "aegis.healthCheck" . | nindent 10 }}
           {{- include "aegis.resourceLimits" . | nindent 10 }}
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
-          env:
-            {{- include "aegis.dbCredsEnv" (dict "components" (list "redis")) | nindent 12 }}
-            - name: REDIS_URL
-              value: "redis://:$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)"
           envFrom:
             - configMapRef:
                 name: {{ include "aegis.fullname" . }}

@@ -1,0 +1,110 @@
+nameOverride: ""
+fullnameOverride: ""
+component: dashboard-bff
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-dashboard-bff
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 300m
+    memory: 128Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 5
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 3
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: false
+  port: 9090
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8082
+
+# Interno apenas — sem Ingress/Kong, mesmo padrão do aegis-query-api. Só
+# dodo_dashboard fala com este serviço, in-cluster.
+ingress:
+  enabled: false
+
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+pdb:
+  enabled: true
+  minAvailable: 1
+
+dashboardBff:
+  port: 8082
+  # Supabase project — usado só para validar o access token que o
+  # dodo_dashboard encaminha (GET /auth/v1/user). Não são segredos.
+  supabase:
+    projectUrl: ""
+    publishableKey: ""
+
+env:
+  AI_CORE_URL: http://aegis-ai-core:8000
+  PORTAL_BFF_INTERNAL_URL: http://aegis-portal-bff:8081
+
+secrets:
+  appCredentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8082
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 8081  # aegis-portal-bff (in-cluster) — checagem de membership
+    - ports:
+        - protocol: TCP
+          port: 8000  # aegis-ai-core (in-cluster) — chatops + SLO
+    - ports:
+        - protocol: TCP
+          port: 443   # Supabase Auth (validação de token)
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

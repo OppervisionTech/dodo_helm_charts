@@ -1,0 +1,16 @@
+# =============================================================================
+# aegis-dashboard-bff — Production Environment Values
+# =============================================================================
+
+hpa:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

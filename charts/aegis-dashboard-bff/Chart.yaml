@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-dashboard-bff
+description: DoDo AegisOps Dashboard BFF — consolidated org-membership check for chatops/SLO endpoints
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"
