@@ -1,0 +1,93 @@
+# =============================================================================
+# Ingress para GET /healthz do dodo_ingestor e do dodo_alerts, expostos
+# publicamente só pra viabilizar o monitor externo de uptime
+# (BetterStack/UptimeRobot) — ver docs/plans/2026-08-26-monitoramento-externo-dodo.md.
+#
+# Aponta pra porta HTTP dedicada de health de cada serviço, não pros
+# listeners de negócio (gRPC/mTLS do ingestor, webhooks do alerts).
+# Sem JWT/mTLS: liveness público, sem dado sensível.
+# Gerenciado pelo Kong Ingress Controller (KIC).
+# TLS provisionado automaticamente pelo cert-manager.
+# =============================================================================
+
+{{- if .Values.routes.ingestorHealth.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aegis.fullname" . }}-ingestor-health
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "https"
+    konghq.com/strip-path: "false"
+    konghq.com/plugins: "rate-limiting-health"
+    {{- if .Values.routes.ingestorHealth.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.routes.ingestorHealth.clusterIssuer | default "letsencrypt-production" | quote }}
+    {{- end }}
+    {{- with .Values.routes.ingestorHealth.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: kong
+  {{- if .Values.routes.ingestorHealth.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.routes.ingestorHealth.hostname | quote }}
+      secretName: {{ .Values.routes.ingestorHealth.tls.secretName | default (printf "%s-ingestor-health-tls" (include "aegis.fullname" .)) }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.routes.ingestorHealth.hostname | quote }}
+      http:
+        paths:
+          {{- range .Values.routes.ingestorHealth.paths }}
+          - path: {{ . }}
+            pathType: Exact
+            backend:
+              service:
+                name: {{ $.Values.routes.ingestorHealth.service }}
+                port:
+                  number: {{ $.Values.routes.ingestorHealth.port }}
+          {{- end }}
+{{- end }}
+
+{{- if .Values.routes.alertsHealth.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aegis.fullname" . }}-alerts-health
+  labels:
+    {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    konghq.com/protocol: "https"
+    konghq.com/strip-path: "false"
+    konghq.com/plugins: "rate-limiting-health"
+    {{- if .Values.routes.alertsHealth.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.routes.alertsHealth.clusterIssuer | default "letsencrypt-production" | quote }}
+    {{- end }}
+    {{- with .Values.routes.alertsHealth.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: kong
+  {{- if .Values.routes.alertsHealth.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.routes.alertsHealth.hostname | quote }}
+      secretName: {{ .Values.routes.alertsHealth.tls.secretName | default (printf "%s-alerts-health-tls" (include "aegis.fullname" .)) }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.routes.alertsHealth.hostname | quote }}
+      http:
+        paths:
+          {{- range .Values.routes.alertsHealth.paths }}
+          - path: {{ . }}
+            pathType: Exact
+            backend:
+              service:
+                name: {{ $.Values.routes.alertsHealth.service }}
+                port:
+                  number: {{ $.Values.routes.alertsHealth.port }}
+          {{- end }}
+{{- end }}

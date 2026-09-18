@@ -77,3 +77,17 @@ routes:
     tls:
       enabled: true
     clusterIssuer: "letsencrypt-production"
+  ingestorHealth:
+    enabled: true
+    # HTTPS puro (não gRPC), pode compartilhar hostname com queryApi/enrollment
+    # sem o problema de negociação ALPN da rota `ingestor` acima.
+    hostname: "api.staging.oppervision.com.br"
+    tls:
+      enabled: true
+    clusterIssuer: "letsencrypt-production"
+  alertsHealth:
+    enabled: true
+    hostname: "alerts.staging.oppervision.com.br"
+    tls:
+      enabled: true
+    clusterIssuer: "letsencrypt-production"

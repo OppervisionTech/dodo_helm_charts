@@ -127,6 +127,9 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 8082  # enrollment
+    - ports:
+        - protocol: TCP
+          port: 8080  # healthz, exposto via Kong pro monitor externo de uptime
   egress:
     - ports:
         - protocol: TCP

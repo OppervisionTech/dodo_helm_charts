@@ -53,6 +53,9 @@ spec:
             - name: metrics
               containerPort: {{ .Values.metrics.port }}
               protocol: TCP
+            - name: health
+              containerPort: {{ .Values.health.liveness.port }}
+              protocol: TCP
             {{- if .Values.enrollment.enabled }}
             - name: enrollment
               containerPort: {{ .Values.enrollment.port }}
