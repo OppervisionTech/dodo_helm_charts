@@ -60,8 +60,17 @@ spec:
               mountPath: /tmp
             - name: nextjs-cache
               mountPath: /app/.next/cache
+            # Next.js standalone server writes here at boot when NODE_ENV
+            # isn't "production" (see env.NODE_ENV in setup-minikube.sh's
+            # aegis-portal values — DODO_DEV local flag, not this chart's
+            # doing) — without a writable mount it crashes with ENOENT
+            # instead of just skipping whatever this directory is for.
+            - name: nextjs-dev
+              mountPath: /app/.next/dev
       volumes:
         - name: tmp
           emptyDir: {}
         - name: nextjs-cache
+          emptyDir: {}
+        - name: nextjs-dev
           emptyDir: {}

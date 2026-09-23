@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-dashboard-bff
+description: DoDo AegisOps Dashboard BFF — backend-for-frontend do dodo_dashboard (membership check, SRE classification, metric aggregation, RCA auto-trigger)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"

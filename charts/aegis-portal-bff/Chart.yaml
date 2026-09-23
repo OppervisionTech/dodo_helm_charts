@@ -1,0 +1,10 @@
+apiVersion: v2
+name: aegis-portal-bff
+description: DoDo AegisOps Portal BFF — backend-for-frontend do dodo_portal (auth/RBAC, billing, dashboards, org-management)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: aegis-library
+    version: "0.1.0"
+    repository: "file://../_library"

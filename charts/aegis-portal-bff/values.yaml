@@ -1,0 +1,111 @@
+nameOverride: ""
+fullnameOverride: ""
+component: portal-bff
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-portal-bff
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 10
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    # Pings the database (HealthController.readiness) — give it more room
+    # than a pure liveness check before flapping the pod out of rotation.
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 5
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+metrics:
+  enabled: false
+  port: 9090
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8081
+
+# Internal, service-to-service only — never exposed via Ingress/Kong. Callers:
+# dodo_portal (every /api/** route proxies here), dodo_ingestor (api-keys/verify,
+# once cut over), dodo_dashboard_bff (membership checks).
+ingress:
+  enabled: false
+
+portalBff:
+  port: 8081
+
+# Variáveis não sensíveis. Segredos (DATABASE_URL, SUPABASE_*, STRIPE_*,
+# CRON_SECRET, INTERNAL_SERVICE_TOKEN, PORTAL_INTERNAL_SERVICE_KEY) vêm do
+# Secret referenciado em secrets.appCredentials — ver dodo_portal_bff/.env.example.
+env:
+  PORTAL_APP_URL: http://localhost:3001
+  PORTAL_QUERY_API_URL: http://aegis-query-api:8080
+
+# Secret externo com todas as env sensíveis listadas em .env.example
+# (DATABASE_URL, DIRECT_URL, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY,
+# SUPABASE_SERVICE_ROLE_KEY, STRIPE_*, REDIS_URL, SLACK_CLIENT_*, CRON_SECRET,
+# INTERNAL_SERVICE_TOKEN, PORTAL_INTERNAL_SERVICE_KEY). Not created by this chart.
+secrets:
+  appCredentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8081
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 8080  # aegis-query-api (usage metrics, org purge)
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis (rate limiter)
+    - ports:
+        - protocol: TCP
+          port: 443   # Supabase REST/Admin API + Stripe + Slack (external HTTPS)
+    - ports:
+        - protocol: TCP
+          port: 6543  # Supabase pooler — Prisma runtime queries
+    - ports:
+        - protocol: TCP
+          port: 5432  # Supabase direct — Prisma migrations on boot
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}
