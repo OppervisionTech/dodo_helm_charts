@@ -1,0 +1,107 @@
+nameOverride: ""
+fullnameOverride: ""
+component: dashboard-bff
+gitSha: ""
+
+image:
+  repository: ghcr.io/oppervisiontech/aegis-dashboard-bff
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+health:
+  type: http
+  liveness:
+    path: /healthz
+    port: http
+    initialDelay: 5
+    period: 20
+    timeout: 5
+    failureThreshold: 3
+  readiness:
+    path: /readyz
+    port: http
+    initialDelay: 5
+    period: 10
+    timeout: 3
+    failureThreshold: 3
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podSecurityContext:
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+
+# Go stdlib http.ServeMux serves /metrics on the same port as everything
+# else — no separate metrics port, unlike the other Go services here.
+metrics:
+  enabled: true
+  port: 8082
+  path: /metrics
+
+service:
+  type: ClusterIP
+  port: 8082
+
+# Internal, service-to-service only — never exposed via Ingress/Kong.
+# Only dodo_dashboard talks to it.
+ingress:
+  enabled: false
+
+dashboardBff:
+  port: 8082
+
+# Variáveis não sensíveis — nomes exatos lidos por internal/config/config.go.
+# SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY (públicas, mas não fixadas aqui —
+# variam por ambiente) vêm de secrets.appCredentials.
+env:
+  AI_CORE_URL: "http://aegis-ai-core:8000"
+  PORTAL_BFF_INTERNAL_URL: "http://aegis-portal-bff:8081"
+  QUERY_API_URL: "http://aegis-query-api:8080"
+  RCA_CANARY_PERCENT: "100"
+
+# Secret externo com SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY (mesmo par que
+# dodo_portal/dodo_portal_bff usam) — reaproveita dodo-portal-credentials.
+secrets:
+  appCredentials: ""
+
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8082
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 8000  # aegis-ai-core
+    - ports:
+        - protocol: TCP
+          port: 8081  # aegis-portal-bff (membership)
+    - ports:
+        - protocol: TCP
+          port: 8080  # aegis-query-api (traces aggregate, SLO freeze status)
+    - ports:
+        - protocol: TCP
+          port: 443   # Supabase auth/v1/user (token verification)
+
+tolerations: []
+nodeSelector: {}
+extraAnnotations: {}

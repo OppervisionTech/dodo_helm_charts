@@ -4,6 +4,16 @@ metadata:
   name: {{ include "aegis.fullname" . }}
   labels:
     {{- include "aegis.labels" . | nindent 4 }}
+  annotations:
+    # Created ahead of the pre-install/pre-upgrade migrate Job (hook-weight
+    # "0") that reads it via envFrom — without an explicit weight here it's
+    # a normal (non-hook) resource, which Helm still installs before Jobs on
+    # upgrades where it already exists, but NOT on a first-ever install,
+    # where the hook phase runs before any regular chart resource exists —
+    # the migrate Job would fail with "configmap ... not found". No
+    # hook-delete-policy: this must persist for the Deployment to use too.
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-1"
 data:
   config.yaml: |
     kafka_brokers: {{ .Values.ingestor.kafkaBrokers | quote }}
