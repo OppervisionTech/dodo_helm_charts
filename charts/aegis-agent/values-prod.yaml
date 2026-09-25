@@ -22,6 +22,9 @@ buffer:
   type: hostPath
   hostPath: /var/lib/aegis-agent/buffer
 
+enrollment:
+  endpoint: "https://api.oppervision.com.br/v1/enroll"
+
 updateStrategy:
   type: RollingUpdate
   rollingUpdate:

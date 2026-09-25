@@ -92,7 +92,8 @@ spec:
               mountPath: /var/log/pods
               readOnly: true
             {{- end }}
-            # Mount the parent dir so agent-id and buffer subdir are both writable
+            # Mount the parent dir so agent-id, buffer, and self-enrolled certs
+            # (see apiKey.secretName in values.yaml) are all writable
             - name: buffer
               mountPath: /var/lib/aegis-agent
             {{- if .Values.tls.secretName }}
@@ -113,6 +114,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            {{- if and (not .Values.tls.secretName) .Values.apiKey.secretName }}
+            - name: DODO_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.apiKey.secretName }}
+                  key: {{ .Values.apiKey.secretKey | default "api-key" }}
+            {{- end }}
       volumes:
         - name: config
           configMap:

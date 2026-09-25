@@ -81,9 +81,29 @@ agent:
   # Disable liveness/readiness probes. Set true when the agent binary has no HTTP health endpoint.
   disableHealthChecks: false
 
-# mTLS certificate secret (required)
+# Static/pre-provisioned mTLS secret (ca.crt, tls.crt, tls.key). Optional.
+# If set, takes precedence over self-enrollment below and is required for
+# air-gapped clusters with no route to the enrollment endpoint.
 tls:
   secretName: ""
+
+# API key for mTLS certificate auto-enrollment (POST enrollment.endpoint).
+# Store as a pre-created K8s Secret (external-secrets/sealed-secrets) —
+# never inline the key here. Used only when tls.secretName is empty.
+apiKey:
+  secretName: ""
+  secretKey: "api-key"
+
+# Self-enrollment endpoint (POST /v1/enroll). Active only when
+# tls.secretName is empty and apiKey.secretName is set — this is the new
+# default install path; see tls.secretName above for the static fallback.
+enrollment:
+  endpoint: "https://kong.aegisops.io:443/v1/enroll"
+
+# Coexistence:
+#   tls.secretName set              -> static secret, no enrollment (unchanged legacy behavior)
+#   tls.secretName empty, apiKey set -> self-enrollment (new default)
+#   both empty                      -> TLS disabled
 
 # Buffer storage
 buffer:
@@ -113,5 +133,13 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 50051  # gRPC to ingestor
+    # HTTPS to the enrollment endpoint (POST /v1/enroll, /v1/token/refresh).
+    # Only needed for self-enrollment (apiKey.secretName set, tls.secretName
+    # empty) — left on unconditionally to keep this policy simple; air-gapped
+    # deployments using a static tls.secretName can drop this rule via
+    # `--set networkPolicy.egress[1]=null` or a values override.
+    - ports:
+        - protocol: TCP
+          port: 443
 
 extraAnnotations: {}

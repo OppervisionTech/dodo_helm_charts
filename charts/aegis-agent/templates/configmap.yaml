@@ -6,18 +6,29 @@ metadata:
     {{- include "aegis.labels" . | nindent 4 }}
 data:
   agent.yaml: |
+    {{- $staticTls := ne .Values.tls.secretName "" }}
+    {{- $selfEnroll := and (not $staticTls) (ne .Values.apiKey.secretName "") }}
     endpoint:
       address: {{ .Values.agent.ingestorEndpoint | quote }}
       timeout_ms: 5000
       retry_max: 3
       retry_backoff_ms: 1000
 
+    # Three-way TLS config:
+    #   tls.secretName set      -> static/pre-provisioned cert, mounted at /etc/aegis/tls
+    #   tls.secretName empty
+    #     and apiKey.secretName -> self-enrollment, cert written to /var/lib/aegis-agent/certs
+    #   neither set              -> TLS disabled
     tls:
-      enabled: {{ if .Values.tls.secretName }}true{{ else }}false{{ end }}
-      ca_cert_path: {{ if .Values.tls.secretName }}"/etc/aegis/tls/ca.crt"{{ else }}""{{ end }}
-      client_cert_path: {{ if .Values.tls.secretName }}"/etc/aegis/tls/tls.crt"{{ else }}""{{ end }}
-      client_key_path: {{ if .Values.tls.secretName }}"/etc/aegis/tls/tls.key"{{ else }}""{{ end }}
-      verify_server: {{ if .Values.tls.secretName }}true{{ else }}false{{ end }}
+      enabled: {{ or $staticTls $selfEnroll }}
+      ca_cert_path: {{ if $staticTls }}"/etc/aegis/tls/ca.crt"{{ else if $selfEnroll }}"/var/lib/aegis-agent/certs/ca.pem"{{ else }}""{{ end }}
+      client_cert_path: {{ if $staticTls }}"/etc/aegis/tls/tls.crt"{{ else if $selfEnroll }}"/var/lib/aegis-agent/certs/agent.pem"{{ else }}""{{ end }}
+      client_key_path: {{ if $staticTls }}"/etc/aegis/tls/tls.key"{{ else if $selfEnroll }}"/var/lib/aegis-agent/certs/agent-key.pem"{{ else }}""{{ end }}
+      verify_server: {{ or $staticTls $selfEnroll }}
+
+    # HTTPS endpoint for mTLS certificate auto-enrollment on first start.
+    # Empty disables it (static tls.secretName above, or TLS disabled).
+    enrollment_endpoint: {{ if $selfEnroll }}{{ .Values.enrollment.endpoint | quote }}{{ else }}""{{ end }}
 
     buffer:
       path: {{ .Values.agent.bufferPath | quote }}
