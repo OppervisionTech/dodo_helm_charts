@@ -103,6 +103,33 @@ spec:
                   key: jwt-private.pem
             {{- end }}
             {{- end }}
+            # Per-org plan limits (entitlements from portal-bff): suspended
+            # orgs, per-org ingest rate, Free daily log cap, host cap,
+            # retention headers. off -> shadow (one cycle) -> enforce.
+            - name: INGESTOR_LIMITS_MODE
+              {{- if .Values.retentionPolicy.enabled }}
+              # From the environment policy (Terraform ConfigMap).
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.retentionPolicy.configMap }}
+                  key: INGESTOR_LIMITS_MODE
+                  optional: true
+              {{- else }}
+              value: {{ .Values.planLimits.mode | quote }}
+              {{- end }}
+            - name: INGESTOR_PORTAL_INTERNAL_URL
+              value: {{ .Values.planLimits.portalInternalURL | quote }}
+            - name: INGESTOR_ORG_RATELIMIT_TOKENS_PER_SEC
+              value: {{ .Values.planLimits.orgTokensPerSec | quote }}
+            - name: INGESTOR_ORG_RATELIMIT_BURST
+              value: {{ .Values.planLimits.orgBurst | quote }}
+            {{- if .Values.planLimits.serviceKeySecretName }}
+            - name: PORTAL_INTERNAL_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.planLimits.serviceKeySecretName }}
+                  key: PORTAL_INTERNAL_SERVICE_KEY
+            {{- end }}
           volumeMounts:
             - name: config
               mountPath: /etc/aegis-ingestor

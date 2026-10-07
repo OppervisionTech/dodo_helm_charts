@@ -117,6 +117,16 @@ enrollment:
   # routes until this is set.
   jwtSecretName: "aegis-agent-jwt"
 
+# Per-org plan limits (see dodo_ingestor internal/entitlements). Needs the
+# portal-bff internal URL and the shared PORTAL_INTERNAL_SERVICE_KEY.
+planLimits:
+  mode: "off"
+  portalInternalURL: "http://aegis-portal-bff:8081"
+  serviceKeySecretName: ""
+  # Ingest rate for a 1.0x plan (Pro); Free runs at 0.25x.
+  orgTokensPerSec: 20000
+  orgBurst: 100000
+
 networkPolicy:
   enabled: true
   allowDNS: true
@@ -149,6 +159,9 @@ networkPolicy:
           # the TCP connect() would hang until timeout, always, since
           # this rule never actually matched the real traffic.
           port: 3001  # dodo_portal container port (Service is 3000 -> targetPort 3001)
+    - ports:
+        - protocol: TCP
+          port: 8081  # aegis-portal-bff (plan entitlements)
 
 tolerations: []
 nodeSelector: {}
@@ -158,3 +171,9 @@ aegis:
   agentID: "11111111-0000-4000-a000-000000000002"
   ingestorAddr: "aegis-ingestor.dodo.svc.cluster.local:50051"
   environment: "development"
+
+# Política de retenção do ambiente (ConfigMap criado pelo Terraform em
+# dodo_infra/terraform). Desligado: o chart usa os próprios valores.
+retentionPolicy:
+  enabled: false
+  configMap: dodo-retention-policy

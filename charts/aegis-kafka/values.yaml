@@ -76,7 +76,10 @@ kafka:
   kraftMode: true
   clusterId: ""  # Auto-generated if empty
   config:
-    logRetentionHours: 168  # 7 days
+    # 3 dias: Kafka é só buffer até os workers (que consomem em segundos);
+    # 3 dias ainda cobrem um fim de semana prolongado de consumidor parado.
+    # Com RF3 cada dia a menos economiza ~1/7 do disco dos brokers.
+    logRetentionHours: 72
     numPartitionsDefault: 6
     defaultReplicationFactor: 3
     minInsyncReplicas: 2

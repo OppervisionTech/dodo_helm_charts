@@ -48,6 +48,16 @@ spec:
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
             {{- include "aegis.dbCredsEnv" (dict "components" (list "pg" "clickhouse" "kafka")) | nindent 12 }}
+            {{- if .Values.retentionPolicy.enabled }}
+            # Environment retention policy (Terraform: dodo_infra/terraform, ConfigMap
+            # dodo-retention-policy). Overrides the chart value when enabled.
+            - name: TRACE_RETENTION_DEFAULT_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.retentionPolicy.configMap }}
+                  key: TRACE_RETENTION_DEFAULT_DAYS
+                  optional: true
+            {{- end }}
             - name: POSTGRES_DSN
               value: "postgres://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_cmdb?sslmode=disable"
             - name: KAFKA_BROKERS

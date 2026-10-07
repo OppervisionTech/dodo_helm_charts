@@ -71,7 +71,10 @@ timescaledb:
     workMem: 64MB
     maxBackgroundWorkers: 8
     effectiveCacheSize: 3GB
-  retentionDays: 30
+  # retentionDays removido: nenhum template lia esse valor. A retenção real
+  # vem das migrations do dodo_metric_worker (metrics: 90d brutos,
+  # comprimidos após 1 dia; metrics_1h: 456d) e a retenção por plano é
+  # aplicada na consulta pelo dodo_query_api (DODO_QUERY_RETENTION_CLAMP_MODE).
 
 initDb:
   enabled: true

@@ -103,3 +103,6 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 3000  # aegis-portal (internal billing summary endpoint)
+    - ports:
+        - protocol: TCP
+          port: 8081  # aegis-portal-bff (coin ledger: wallets, usage batches, rate card)

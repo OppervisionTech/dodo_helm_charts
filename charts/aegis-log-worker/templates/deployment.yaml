@@ -48,6 +48,16 @@ spec:
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
             {{- include "aegis.dbCredsEnv" (dict "components" (list "clickhouse" "kafka")) | nindent 12 }}
+            {{- if .Values.retentionPolicy.enabled }}
+            # Environment retention policy (Terraform: dodo_infra/terraform, ConfigMap
+            # dodo-retention-policy). Overrides the chart value when enabled.
+            - name: LOG_RETENTION_DEFAULT_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.retentionPolicy.configMap }}
+                  key: LOG_RETENTION_DEFAULT_DAYS
+                  optional: true
+            {{- end }}
             - name: CLICKHOUSE_ADDR
               value: "$(CLICKHOUSE_HOST):$(CLICKHOUSE_NATIVE_PORT)"
             - name: CLICKHOUSE_USER
