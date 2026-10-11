@@ -65,7 +65,7 @@ worker:
 # DB endpoints (host/port/password) vêm do Secret "dodo-db-credentials" do cluster
 # via valueFrom.secretKeyRef no deployment.yaml.
 env:
-  KAFKA_TOPICS: host-inventory
+  KAFKA_TOPICS: host-inventory,deploy-events
   KAFKA_GROUP_ID: cmdb-worker-group
   KAFKA_MAX_RETRIES: "3"
   KAFKA_DLQ_ENABLED: "true"

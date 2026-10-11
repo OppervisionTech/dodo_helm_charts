@@ -30,3 +30,9 @@ aiCore:
   models:
     anomalyThreshold: 0.95
     classificationMinConfidence: 0.8
+
+# Merged into the chart's default env (values.yaml).
+env:
+  # Copilot/Aegis coins: plan tiers and the pause at zero balance are
+  # enforced (dev-env stays in shadow). Per-org overrides in Redis still win.
+  DODO_AI_QUOTA_MODE: enforce

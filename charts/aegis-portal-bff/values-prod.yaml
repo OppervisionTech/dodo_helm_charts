@@ -1,0 +1,10 @@
+# =============================================================================
+# aegis-portal-bff — Production Environment Values
+# =============================================================================
+
+# Merged into the chart's default env (values.yaml).
+env:
+  # Max/add-on features are blocked for orgs that don't have them. The BFF is
+  # the source of truth: query_api and ai_core read the mode from its
+  # entitlements snapshot (dev-env stays in shadow).
+  FEATURE_GATING_MODE: enforce
