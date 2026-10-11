@@ -3,6 +3,8 @@
 # =============================================================================
 # 2 réplicas, GPU pronto (habilitar quando nós GPU disponíveis).
 # Model cache 50Gi, todas as features habilitadas.
+# Pré-requisito: Secret "aegis-ai-core-app-secrets" com DODO_LLM_API_KEY,
+# DODO_CLAUDE_API_KEY e DODO_EMBEDDING_API_KEY (OpenAI, embeddings do RAG).
 # =============================================================================
 
 replicaCount: 2
@@ -36,3 +38,8 @@ env:
   # Copilot/Aegis coins: plan tiers and the pause at zero balance are
   # enforced (dev-env stays in shadow). Per-org overrides in Redis still win.
   DODO_AI_QUOTA_MODE: enforce
+  # RAG falha alto sem DODO_EMBEDDING_API_KEY em vez de usar vetores falsos.
+  DODO_EMBEDDING_STRICT_MODE: "true"
+
+secrets:
+  appCredentials: aegis-ai-core-app-secrets
