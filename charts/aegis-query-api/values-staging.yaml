@@ -24,12 +24,12 @@
 # =============================================================================
 
 image:
-  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_query_api
+  repository: ghcr.io/oppervisiontech/dodo_query_api
   tag: "latest"
   pullPolicy: Always
 
 imagePullSecrets:
-  - name: registry-dodo-aegisops-staging
+  - name: ghcr-pull
 
 replicaCount: 1
 

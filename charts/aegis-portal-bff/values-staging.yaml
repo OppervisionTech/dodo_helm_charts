@@ -1,0 +1,19 @@
+# aegis-portal-bff — staging (Hetzner)
+image:
+  repository: ghcr.io/oppervisiontech/dodo_portal_bff
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-pull
+
+replicaCount: 1
+
+env:
+  PORTAL_APP_URL: https://portal.staging.oppervision.com.br
+  PORTAL_QUERY_API_URL: http://aegis-query-api:8080
+
+secrets:
+  # Chaves de dodo_portal_bff/.env.example (DATABASE_URL, DIRECT_URL, SUPABASE_*,
+  # STRIPE_*, REDIS_URL, SLACK_CLIENT_*, CRON_SECRET, INTERNAL_SERVICE_TOKEN,
+  # PORTAL_INTERNAL_SERVICE_KEY)
+  appCredentials: aegis-portal-bff-app-secrets
