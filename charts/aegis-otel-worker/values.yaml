@@ -68,6 +68,7 @@ env:
   KAFKA_TOPICS: otel-traces
   KAFKA_GROUP_ID: otel-worker-group
   CLICKHOUSE_DB: dodo_logs
+  CLICKHOUSE_USER: dodo  # droplet ClickHouse user (não-sensível). Senha vem do dodo-db-credentials.
   LOG_LEVEL: info
   METRICS_PORT: "9090"
   HEALTH_PORT: "8080"
