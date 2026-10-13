@@ -203,6 +203,12 @@ networkPolicy:
           port: 443   # LLM APIs (Anthropic, external), DigitalOcean billing API
     - ports:
         - protocol: TCP
+          port: 6443  # customers' self-hosted Kubernetes API (k3s/kubeadm); managed ones use 443
+    - ports:
+        - protocol: TCP
+          port: 9092  # Kafka/Redpanda (alert-events consumer, KAFKA_BROKERS)
+    - ports:
+        - protocol: TCP
           port: 8123  # ClickHouse HTTP (usage dimensions for cloud cost allocation)
     - ports:
         - protocol: TCP

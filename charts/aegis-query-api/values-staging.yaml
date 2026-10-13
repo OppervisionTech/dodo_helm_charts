@@ -48,6 +48,10 @@ resources:
     memory: 512Mi
 
 env:
+  # Hetzner answers on the AWS metadata IP; never let the AWS SDKs probe it.
+  AWS_EC2_METADATA_DISABLED: "true"
+  # Role customers' AWS roles trust (see values-prod.yaml).
+  DODO_AWS_PLATFORM_ROLE_ARN: ""
   DODO_QUERY_CORS_ORIGINS: "https://dashboard.staging.oppervision.com.br,https://portal.staging.oppervision.com.br"
   DODO_QUERY_JWT_ISSUER: "https://vnkhsfwxqkyvjyncmvrt.supabase.co/auth/v1"
   DODO_QUERY_JWT_AUDIENCE: "authenticated"
