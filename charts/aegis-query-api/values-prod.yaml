@@ -20,3 +20,19 @@ resources:
 
 queryApi:
   corsAllowedOrigins: "https://dashboard.oppervision.com.br,https://portal.oppervision.com.br"
+
+# AWS integration (verifies a customer's role at connect time). Same setup
+# as aegis-ai-core, which assumes the same roles to collect and act:
+#   1. Platform account: role "dodo-platform" whose only permission is
+#      sts:AssumeRole on arn:aws:iam::*:role/dodo-finops-*. Customers trust
+#      this role ARN, so it must never change.
+#   2. Base credential that may assume dodo-platform:
+#      - VPS (Hetzner/k3s): an IAM user with only sts:AssumeRole on
+#        dodo-platform, restricted to the VPS egress IP (aws:SourceIp).
+#        Put AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY in secrets.appCredentials.
+#      - Managed cloud later (GCP/EKS): workload identity federation to the
+#        same dodo-platform role, and delete the IAM user. Customers change
+#        nothing.
+env:
+  AWS_EC2_METADATA_DISABLED: "true"
+  DODO_AWS_PLATFORM_ROLE_ARN: ""  # arn:aws:iam::<ACCOUNT_ID>:role/dodo-platform
