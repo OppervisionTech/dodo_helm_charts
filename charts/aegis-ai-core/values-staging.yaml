@@ -9,12 +9,12 @@
 # (verificação do pipeline cd-staging.yml — comentário de teste, sem efeito)
 
 image:
-  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_ai_core
+  repository: ghcr.io/oppervisiontech/dodo_ai_core
   tag: "latest"
   pullPolicy: Always
 
 imagePullSecrets:
-  - name: registry-dodo-aegisops-staging
+  - name: ghcr-pull
 
 replicaCount: 1
 

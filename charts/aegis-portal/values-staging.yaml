@@ -3,7 +3,7 @@
 # =============================================================================
 # Portal Next.js: NEXT_PUBLIC_* aqui valem para SSR/API routes. O bundle JS
 # do client foi inlinado em build time pelo Dockerfile do dodo_portal —
-# certifique-se que a imagem em registry.digitalocean.com foi buildada com
+# certifique-se que a imagem em ghcr.io/oppervisiontech foi buildada com
 # build-args ARG NEXT_PUBLIC_API_URL=https://api.staging.oppervision.com.br etc.
 #
 # Pré-requisitos no cluster antes do helm install:
@@ -13,12 +13,12 @@
 # =============================================================================
 
 image:
-  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_portal
+  repository: ghcr.io/oppervisiontech/dodo_portal
   tag: "latest"
   pullPolicy: Always
 
 imagePullSecrets:
-  - name: registry-dodo-aegisops-staging
+  - name: ghcr-pull
 
 replicaCount: 1
 
@@ -53,6 +53,7 @@ env:
   ALLOWED_ORIGINS: https://dashboard.staging.oppervision.com.br
   NEXT_PUBLIC_API_URL: https://api.staging.oppervision.com.br
   PORTAL_QUERY_API_URL: http://aegis-query-api:8080
+  PORTAL_BFF_INTERNAL_URL: "http://aegis-portal-bff:8081"
 
 # Os valores reais Supabase project URL e publishable key vêm do pipeline do
 # repo dodo_portal (`--set portal.supabase.projectUrl=...`). Defaults vazios
@@ -72,3 +73,31 @@ health:
   readiness:
     path: /
     initialDelay: 10
+
+# Copiado de values.yaml (listas do Helm não fazem merge) + egress para o BFF.
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 3001
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 8080  # query-api (in-cluster)
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis (VM de bancos)
+    - ports:
+        - protocol: TCP
+          port: 443   # Supabase REST + Stripe (external HTTPS)
+    - ports:
+        - protocol: TCP
+          port: 6543  # Supabase pooler
+    - ports:
+        - protocol: TCP
+          port: 5432  # Supabase direct
+    - ports:
+        - protocol: TCP
+          port: 8081  # aegis-portal-bff
