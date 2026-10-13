@@ -23,3 +23,9 @@ agent:
 buffer:
   type: hostPath
   hostPath: /var/lib/aegis-agent/buffer
+
+# Dedicated hostname — same reason as aegis-kong's routes.ingestor: gRPC and
+# HTTPS can't unambiguously share a hostname (ALPN negotiation), so staging's
+# enrollment route lives on api.staging.* rather than grpc.staging.*.
+enrollment:
+  endpoint: "https://api.staging.oppervision.com.br/v1/enroll"

@@ -74,6 +74,9 @@ portalBff:
 env:
   PORTAL_APP_URL: http://localhost:3001
   PORTAL_QUERY_API_URL: http://aegis-query-api:8080
+  # Plan features (Max-only, or Pro add-ons): off -> shadow (one cycle) ->
+  # enforce. Sent to query_api, ai_core and the UIs with the entitlements.
+  FEATURE_GATING_MODE: "off"
 
 # Secret externo com todas as env sensíveis listadas em .env.example
 # (DATABASE_URL, DIRECT_URL, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY,
@@ -81,6 +84,31 @@ env:
 # INTERNAL_SERVICE_TOKEN, PORTAL_INTERNAL_SERVICE_KEY). Not created by this chart.
 secrets:
   appCredentials: ""
+
+# In-cluster schedules for /api/cron/* (see templates/cronjobs.yaml).
+# Requires secrets.appCredentials (CRON_SECRET is read from it).
+cronJobs:
+  enabled: true
+  image: curlimages/curl:8.10.1
+  jobs:
+    # Hourly: sends only usage increases, so frequency never overcounts.
+    - name: meter-report
+      path: meter-report
+      schedule: "17 * * * *"
+      enabled: true
+      timeoutSeconds: 1500
+    - name: purge-retry
+      path: purge-retry
+      schedule: "*/30 * * * *"
+      enabled: true
+      timeoutSeconds: 600
+    # Hourly: monthly AI coin allowance per org (tops up as hosts grow),
+    # expiry of packs and of last period's leftover allowance.
+    - name: coins-cycle
+      path: coins-cycle
+      schedule: "7 * * * *"
+      enabled: true
+      timeoutSeconds: 1500
 
 networkPolicy:
   enabled: true

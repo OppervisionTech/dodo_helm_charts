@@ -54,6 +54,16 @@ spec:
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
             {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "clickhouse" "redis" "kafka")) | nindent 12 }}
+            {{- if .Values.retentionPolicy.enabled }}
+            # Environment retention policy (Terraform: dodo_infra/terraform, ConfigMap
+            # dodo-retention-policy). Overrides the chart value when enabled.
+            - name: DODO_QUERY_RETENTION_CLAMP_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.retentionPolicy.configMap }}
+                  key: DODO_QUERY_RETENTION_CLAMP_MODE
+                  optional: true
+            {{- end }}
             - name: KAFKA_BROKERS
               value: "$(KAFKA_BOOTSTRAP)"
             - name: DODO_QUERY_TIMESCALEDB_DSN

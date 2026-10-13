@@ -122,7 +122,18 @@ env:
   DODO_DB_POOL_MAX: "10"
   DODO_EMBEDDING_CACHE_TTL: "3600"
   DODO_LLM_PROVIDER: anthropic
-  DODO_LLM_MODEL: claude-sonnet-4-6
+  DODO_LLM_MODEL: claude-sonnet-5
+  # Tiers (Rápido / Equilibrado / Profundo). Background features run on FAST.
+  DODO_LLM_MODEL_FAST: claude-haiku-4-5
+  DODO_LLM_MODEL_BALANCED: claude-sonnet-5
+  DODO_LLM_MODEL_DEEP: claude-opus-5-5
+  DODO_LLM_ROUTING_ENABLED: "true"
+  DODO_LLM_PROMPT_CACHING: "true"
+  # AI metering: 1 coin = US$0.01, orgs debited cost × 3. Quota mode
+  # off → shadow (one billing cycle) → enforce.
+  DODO_AI_COIN_VALUE_USD_MICROS: "10000"
+  DODO_AI_MARKUP: "3.0"
+  DODO_AI_QUOTA_MODE: "off"
   DODO_LLM_API_BASE: ""
   DODO_CLAUDE_MODEL: claude-sonnet-4-6
   DODO_CLAUDE_MAX_TOKENS: "4096"
@@ -213,7 +224,16 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 3000  # aegis-portal (internal billing summary endpoint) — was 3001, aegis-portal's Service actually listens on 3000
+    - ports:
+        - protocol: TCP
+          port: 8081  # aegis-portal-bff (coin ledger: wallets, usage batches, rate card)
 
 tolerations: []
 nodeSelector: {}
 extraAnnotations: {}
+
+# Política de retenção do ambiente (ConfigMap criado pelo Terraform em
+# dodo_infra/terraform). Desligado: o chart usa os próprios valores.
+retentionPolicy:
+  enabled: false
+  configMap: dodo-retention-policy

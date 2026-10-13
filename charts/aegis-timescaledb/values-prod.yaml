@@ -22,4 +22,4 @@ timescaledb:
     workMem: 64MB
     effectiveCacheSize: 6GB
     maxBackgroundWorkers: 8
-  retentionDays: 90
+  # retentionDays removido (sem efeito) — ver values.yaml.

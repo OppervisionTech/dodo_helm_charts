@@ -81,6 +81,16 @@ spec:
           {{- include "aegis.containerSecurityContext" . | nindent 10 }}
           env:
             {{- include "aegis.dbCredsEnv" (dict "components" (list "tsdb" "pg" "redis" "clickhouse" "kafka")) | nindent 12 }}
+            {{- if .Values.retentionPolicy.enabled }}
+            # Environment retention policy (Terraform: dodo_infra/terraform, ConfigMap
+            # dodo-retention-policy). Overrides the chart value when enabled.
+            - name: DODO_AI_QUOTA_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.retentionPolicy.configMap }}
+                  key: DODO_AI_QUOTA_MODE
+                  optional: true
+            {{- end }}
             - name: DODO_DATABASE_URL
               value: "postgresql://dodo_app:$(PG_PASSWORD)@$(PG_HOST):$(PG_PORT)/dodo_ai_core"
             # Shared data stores read by ChatOps tools (get_active_incidents,
@@ -98,11 +108,13 @@ spec:
             # reads for these exact dimensions in usageMetrics().
             - name: DODO_CLICKHOUSE_DSN
               value: "http://$(CLICKHOUSE_USERNAME):$(CLICKHOUSE_PASSWORD)@$(CLICKHOUSE_HOST):$(CLICKHOUSE_HTTP_PORT)/$(CLICKHOUSE_DB)"
-            # dodo_portal's real Stripe-backed billing data — service-to-service,
-            # authenticated by DODO_PORTAL_INTERNAL_SERVICE_KEY (from appCredentials),
-            # not a user session.
+            # Billing source of truth (portal_bff): billing summary, coin
+            # wallets, usage batches, rate card — service-to-service,
+            # authenticated by DODO_PORTAL_INTERNAL_SERVICE_KEY (from
+            # appCredentials). Straight to the BFF: the Next.js portal only
+            # proxied these anyway, and the BFF is the one that owns them.
             - name: DODO_PORTAL_INTERNAL_URL
-              value: "http://aegis-portal:3000"
+              value: {{ .Values.portalInternalUrl | default "http://aegis-portal-bff:8081" | quote }}
             - name: KAFKA_BROKERS
               value: "$(KAFKA_BOOTSTRAP)"
             {{- if .Values.githubIntegration.tokenKeySecret }}

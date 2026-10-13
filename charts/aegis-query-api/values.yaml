@@ -128,6 +128,14 @@ env:
   # Usado para verificar membership real (organization_members) antes de
   # aceitar o header X-Org-ID como fallback para JWTs sem claim org_id.
   DODO_QUERY_PORTAL_INTERNAL_URL: "http://aegis-portal.dodo.svc.cluster.local:3000"
+  # Retenção por plano (HU monetização, Fase 8): limita o intervalo das
+  # consultas de logs/traces/métricas à retenção do plano da org, lida do
+  # portal_bff (GET /api/internal/entitlements/:orgId). off | shadow | enforce.
+  # A chave de serviço (PORTAL_INTERNAL_SERVICE_KEY) vem de
+  # secrets.appCredentials — sem ela o clamp fica desligado (logado).
+  DODO_QUERY_RETENTION_CLAMP_MODE: "off"
+  DODO_QUERY_ENTITLEMENTS_URL: "http://aegis-portal-bff:8081"
+  DODO_QUERY_ENTITLEMENTS_CACHE_TTL: 5m
   DODO_QUERY_RATELIMIT_ENABLED: "true"
   DODO_QUERY_RATELIMIT_REQUESTS_PER_SECOND: "100"
   DODO_QUERY_RATELIMIT_BURST_SIZE: "200"
@@ -195,6 +203,9 @@ networkPolicy:
           port: 3000  # aegis-portal service port (DODO_QUERY_PORTAL_INTERNAL_URL)
         - protocol: TCP
           port: 3001  # aegis-portal container port (Cilium avalia pós-DNAT)
+    - ports:
+        - protocol: TCP
+          port: 8081  # aegis-portal-bff (entitlements — DODO_QUERY_ENTITLEMENTS_URL)
 
 tolerations: []
 nodeSelector: {}
@@ -204,3 +215,9 @@ aegis:
   agentID: "11111111-0000-4000-a000-000000000001"
   ingestorAddr: "aegis-ingestor.dodo.svc.cluster.local:50051"
   environment: "development"
+
+# Política de retenção do ambiente (ConfigMap criado pelo Terraform em
+# dodo_infra/terraform). Desligado: o chart usa os próprios valores.
+retentionPolicy:
+  enabled: false
+  configMap: dodo-retention-policy

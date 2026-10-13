@@ -92,3 +92,9 @@ aegis:
   agentID: "11111111-0000-4000-a000-000000000004"
   ingestorAddr: "aegis-ingestor:50051"
   environment: "production"
+
+# Política de retenção do ambiente (ConfigMap criado pelo Terraform em
+# dodo_infra/terraform). Desligado: o chart usa os próprios valores.
+retentionPolicy:
+  enabled: false
+  configMap: dodo-retention-policy
