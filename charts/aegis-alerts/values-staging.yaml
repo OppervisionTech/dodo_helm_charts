@@ -5,12 +5,12 @@
 # =============================================================================
 
 image:
-  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_alerts
+  repository: ghcr.io/oppervisiontech/dodo_alerts
   tag: "latest"
   pullPolicy: Always
 
 imagePullSecrets:
-  - name: registry-dodo-aegisops-staging
+  - name: ghcr-pull
 
 replicaCount: 1
 

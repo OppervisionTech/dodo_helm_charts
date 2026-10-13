@@ -40,6 +40,13 @@ env:
   DODO_AI_QUOTA_MODE: enforce
   # RAG falha alto sem DODO_EMBEDDING_API_KEY em vez de usar vetores falsos.
   DODO_EMBEDDING_STRICT_MODE: "true"
+  # AWS (FinOps/remediation into customer accounts): see aegis-query-api's
+  # values-prod.yaml for the full setup; both services need the same.
+  # Never probe the instance-metadata IP: on a non-AWS host (Hetzner, GCP)
+  # it is another provider's metadata service, not AWS credentials.
+  AWS_EC2_METADATA_DISABLED: "true"
+  # The role customers' trust policies name (NEXT_PUBLIC_DODO_AWS_PRINCIPAL).
+  DODO_AWS_PLATFORM_ROLE_ARN: ""  # arn:aws:iam::<ACCOUNT_ID>:role/dodo-platform
 
 secrets:
   appCredentials: aegis-ai-core-app-secrets

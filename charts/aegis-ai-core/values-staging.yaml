@@ -9,12 +9,12 @@
 # (verificação do pipeline cd-staging.yml — comentário de teste, sem efeito)
 
 image:
-  repository: registry.digitalocean.com/dodo-aegisops-staging/dodo_ai_core
+  repository: ghcr.io/oppervisiontech/dodo_ai_core
   tag: "latest"
   pullPolicy: Always
 
 imagePullSecrets:
-  - name: registry-dodo-aegisops-staging
+  - name: ghcr-pull
 
 replicaCount: 1
 
@@ -33,6 +33,10 @@ modelCache:
   size: 10Gi
 
 env:
+  # Hetzner answers on the AWS metadata IP; never let the AWS SDKs probe it.
+  AWS_EC2_METADATA_DISABLED: "true"
+  # Role customers' AWS roles trust (see values-prod.yaml of aegis-query-api).
+  DODO_AWS_PLATFORM_ROLE_ARN: ""
   DODO_ENVIRONMENT: staging
   DODO_LLM_PROVIDER: openrouter
   # openai/gpt-4.1-mini, not the openrouter free tier: the free
@@ -97,6 +101,12 @@ networkPolicy:
     - ports:
         - protocol: TCP
           port: 443   # Anthropic API
+    - ports:
+        - protocol: TCP
+          port: 6443  # customers' self-hosted Kubernetes API (k3s/kubeadm); managed ones use 443
+    - ports:
+        - protocol: TCP
+          port: 9092  # Kafka/Redpanda (alert-events consumer, KAFKA_BROKERS)
     - ports:
         - protocol: TCP
           port: 8123  # ClickHouse HTTP (SLO SLI queries, cloud cost allocation)

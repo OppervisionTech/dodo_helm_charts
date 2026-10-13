@@ -1,0 +1,13 @@
+# aegis-dashboard-bff — staging (Hetzner)
+image:
+  repository: ghcr.io/oppervisiontech/dodo_dashboard_bff
+  pullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: ghcr-pull
+
+replicaCount: 1
+
+secrets:
+  # SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY
+  appCredentials: aegis-dashboard-bff-app-secrets
