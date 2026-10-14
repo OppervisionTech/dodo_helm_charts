@@ -31,5 +31,6 @@ check_env aegis-dashboard DASHBOARD_BFF_INTERNAL_URL "http://aegis-dashboard-bff
 check_env aegis-portal PORTAL_BFF_INTERNAL_URL "http://aegis-portal-bff:8081"
 check_egress aegis-dashboard 8082
 check_egress aegis-portal 8081
+check_egress aegis-portal-bff 5433   # Postgres da VM (banco dodo_portal)
 
 [ $fail -eq 0 ] && echo "STAGING_WIRING_OK" || exit 1

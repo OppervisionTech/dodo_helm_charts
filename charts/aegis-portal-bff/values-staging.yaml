@@ -13,7 +13,39 @@ env:
   PORTAL_QUERY_API_URL: http://aegis-query-api:8080
 
 secrets:
-  # Chaves de dodo_portal_bff/.env.example (DATABASE_URL, DIRECT_URL, SUPABASE_*,
+  # Chaves de dodo_portal_bff/.env.example. Em staging DATABASE_URL/DIRECT_URL
+  # apontam para o Postgres da VM (10.200.0.10:5433, banco dodo_portal). Demais:
+  # (SUPABASE_*,
   # STRIPE_*, REDIS_URL, SLACK_CLIENT_*, CRON_SECRET, INTERNAL_SERVICE_TOKEN,
   # PORTAL_INTERNAL_SERVICE_KEY)
   appCredentials: aegis-portal-bff-app-secrets
+
+# Copiado de values.yaml (listas do Helm não fazem merge) + egress para o
+# Postgres da VM de bancos (banco dodo_portal, porta 5433) usado em staging.
+networkPolicy:
+  enabled: true
+  allowDNS: true
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8081
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 8080  # aegis-query-api (usage metrics, org purge)
+    - ports:
+        - protocol: TCP
+          port: 6379  # Redis (rate limiter)
+    - ports:
+        - protocol: TCP
+          port: 443   # Supabase REST/Admin API + Stripe + Slack (external HTTPS)
+    - ports:
+        - protocol: TCP
+          port: 6543  # Supabase pooler — Prisma runtime queries
+    - ports:
+        - protocol: TCP
+          port: 5432  # Supabase direct — Prisma migrations on boot
+
+    - ports:
+        - protocol: TCP
+          port: 5433  # Postgres da VM de bancos (dodo_portal) — staging
