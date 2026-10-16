@@ -108,6 +108,10 @@ spec:
             # reads for these exact dimensions in usageMetrics().
             - name: DODO_CLICKHOUSE_DSN
               value: "http://$(CLICKHOUSE_USERNAME):$(CLICKHOUSE_PASSWORD)@$(CLICKHOUSE_HOST):$(CLICKHOUSE_HTTP_PORT)/$(CLICKHOUSE_DB)"
+            # ChatOps query_logs / query_traces / service RED read logs and
+            # spans over the ClickHouse HTTP interface (dodo.logs, dodo.spans).
+            - name: DODO_CLICKHOUSE_HTTP_URL
+              value: "http://$(CLICKHOUSE_USERNAME):$(CLICKHOUSE_PASSWORD)@$(CLICKHOUSE_HOST):$(CLICKHOUSE_HTTP_PORT)"
             # Billing source of truth (portal_bff): billing summary, coin
             # wallets, usage batches, rate card — service-to-service,
             # authenticated by DODO_PORTAL_INTERNAL_SERVICE_KEY (from
