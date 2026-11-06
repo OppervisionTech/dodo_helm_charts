@@ -8,6 +8,14 @@ data:
   agent.yaml: |
     {{- $staticTls := ne .Values.tls.secretName "" }}
     {{- $selfEnroll := and (not $staticTls) (ne .Values.apiKey.secretName "") }}
+    {{- /* Plaintext is only acceptable to an in-cluster ingestor (a host
+         without dots, or *.svc / *.cluster.local). Anything else would ship
+         telemetry over the internet unencrypted. */}}
+    {{- $host := splitList ":" .Values.agent.ingestorEndpoint | first }}
+    {{- $inCluster := or (not (contains "." $host)) (hasSuffix ".svc" $host) (hasSuffix ".cluster.local" $host) }}
+    {{- if and (not (or $staticTls $selfEnroll)) (not $inCluster) }}
+    {{- fail (printf "agent.ingestorEndpoint %q is not in-cluster, so TLS is required: set apiKey.secretName (self-enrollment) or tls.secretName" .Values.agent.ingestorEndpoint) }}
+    {{- end }}
     endpoint:
       address: {{ .Values.agent.ingestorEndpoint | quote }}
       timeout_ms: 5000
@@ -39,6 +47,12 @@ data:
     logging:
       level: {{ .Values.agent.logging.level | default "info" | quote }}
       output: "stdout"
+
+    # Probe server for the liveness/readiness probes (agent >= 0.2.0). Listens
+    # on all interfaces so the kubelet can reach it on the pod IP.
+    health:
+      enabled: true
+      listen: "0.0.0.0:{{ .Values.agent.port }}"
 
     config_pull_interval_seconds: 0
     agent_id_path: "/var/lib/aegis-agent/agent-id"

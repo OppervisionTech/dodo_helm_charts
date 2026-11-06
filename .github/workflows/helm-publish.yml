@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   publish:
@@ -31,14 +32,14 @@ jobs:
       - name: Helm package
         run: helm package charts/${{ inputs.chart }}
 
-      - name: Login to Docker Hub OCI registry
-        run: |
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | helm registry login registry-1.docker.io \
-            --username "${{ secrets.DOCKERHUB_USERNAME }}" \
-            --password-stdin
+      # Public chart for customers: get.sh installs
+      # oci://ghcr.io/oppervisiontech/charts/aegis-agent. After the first push,
+      # set the package visibility to public in the org's Packages settings.
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
 
-      - name: Push chart to Docker Hub
+      - name: Push chart to GHCR
         run: |
           pkg=$(ls ${{ inputs.chart }}-*.tgz)
-          echo "Pushing $pkg to oci://registry-1.docker.io/enzotrevisan9"
-          helm push "$pkg" oci://registry-1.docker.io/enzotrevisan9
+          echo "Pushing $pkg to oci://ghcr.io/oppervisiontech/charts"
+          helm push "$pkg" oci://ghcr.io/oppervisiontech/charts
