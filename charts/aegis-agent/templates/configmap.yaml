@@ -18,7 +18,7 @@ data:
     {{- end }}
     endpoint:
       address: {{ .Values.agent.ingestorEndpoint | quote }}
-      timeout_ms: 5000
+      timeout_ms: 15000
       retry_max: 3
       retry_backoff_ms: 1000
 
@@ -42,7 +42,7 @@ data:
       path: {{ .Values.agent.bufferPath | quote }}
       max_size_bytes: 536870912
       flush_interval_ms: 5000
-      max_batch_size: 500
+      max_batch_size: 200
 
     logging:
       level: {{ .Values.agent.logging.level | default "info" | quote }}
