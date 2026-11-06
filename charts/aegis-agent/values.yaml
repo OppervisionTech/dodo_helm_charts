@@ -68,7 +68,8 @@ agent:
       enabled: false
       paths: "/host/var/log/containers/*.log"
       maxLinesPerSec: 5000
-  ingestorEndpoint: "aegis-ingestor:50051"
+  # Live ingestor (gRPC over TLS via Kong). get.sh also passes it with --set.
+  ingestorEndpoint: "grpc.stg.dodo.oppervision.com.br:443"
   bufferPath: /var/lib/aegis-agent/buffer
   bufferMaxSize: 512Mi
   logging:
@@ -98,7 +99,7 @@ apiKey:
 # tls.secretName is empty and apiKey.secretName is set — this is the new
 # default install path; see tls.secretName above for the static fallback.
 enrollment:
-  endpoint: "https://kong.aegisops.io:443/v1/enroll"
+  endpoint: "https://api.stg.dodo.oppervision.com.br/v1/enroll"
 
 # Coexistence:
 #   tls.secretName set              -> static secret, no enrollment (unchanged legacy behavior)

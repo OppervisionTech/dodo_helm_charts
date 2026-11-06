@@ -40,6 +40,12 @@ data:
       level: {{ .Values.agent.logging.level | default "info" | quote }}
       output: "stdout"
 
+    # Probe server for the liveness/readiness probes (agent >= 0.2.0). Listens
+    # on all interfaces so the kubelet can reach it on the pod IP.
+    health:
+      enabled: true
+      listen: "0.0.0.0:{{ .Values.agent.port }}"
+
     config_pull_interval_seconds: 0
     agent_id_path: "/var/lib/aegis-agent/agent-id"
 
