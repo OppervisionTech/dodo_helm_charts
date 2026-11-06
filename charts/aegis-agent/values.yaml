@@ -68,8 +68,10 @@ agent:
       enabled: false
       paths: "/host/var/log/containers/*.log"
       maxLinesPerSec: 5000
-  # Live ingestor (gRPC over TLS via Kong). get.sh also passes it with --set.
-  ingestorEndpoint: "grpc.stg.dodo.oppervision.com.br:443"
+  # In-cluster default. Customer installs (get.sh --mode k8s) set the public
+  # endpoint (grpc.stg.dodo.oppervision.com.br:443) together with
+  # apiKey.secretName; the configmap refuses a public endpoint without TLS.
+  ingestorEndpoint: "aegis-ingestor:50051"
   bufferPath: /var/lib/aegis-agent/buffer
   bufferMaxSize: 512Mi
   logging:

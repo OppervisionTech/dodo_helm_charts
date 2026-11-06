@@ -8,6 +8,14 @@ data:
   agent.yaml: |
     {{- $staticTls := ne .Values.tls.secretName "" }}
     {{- $selfEnroll := and (not $staticTls) (ne .Values.apiKey.secretName "") }}
+    {{- /* Plaintext is only acceptable to an in-cluster ingestor (a host
+         without dots, or *.svc / *.cluster.local). Anything else would ship
+         telemetry over the internet unencrypted. */}}
+    {{- $host := splitList ":" .Values.agent.ingestorEndpoint | first }}
+    {{- $inCluster := or (not (contains "." $host)) (hasSuffix ".svc" $host) (hasSuffix ".cluster.local" $host) }}
+    {{- if and (not (or $staticTls $selfEnroll)) (not $inCluster) }}
+    {{- fail (printf "agent.ingestorEndpoint %q is not in-cluster, so TLS is required: set apiKey.secretName (self-enrollment) or tls.secretName" .Values.agent.ingestorEndpoint) }}
+    {{- end }}
     endpoint:
       address: {{ .Values.agent.ingestorEndpoint | quote }}
       timeout_ms: 5000
