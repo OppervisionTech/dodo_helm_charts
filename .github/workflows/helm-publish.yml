@@ -1,12 +1,20 @@
 name: Helm Publish (OCI)
 
 on:
+  # Only the public agent chart publishes on merge; the SaaS charts stay
+  # private and are published by hand (workflow_dispatch) if ever needed.
+  push:
+    branches: [main]
+    paths: ["charts/aegis-agent/**"]
   workflow_dispatch:
     inputs:
       chart:
         description: "Chart to package and publish"
         type: string
         default: aegis-agent
+
+env:
+  CHART: ${{ inputs.chart || 'aegis-agent' }}
 
 permissions:
   contents: read
@@ -24,22 +32,35 @@ jobs:
           version: v3.17.0
 
       - name: Helm dependency build
-        run: helm dependency build charts/${{ inputs.chart }}
+        run: helm dependency build charts/${{ env.CHART }}
 
       - name: Helm lint
-        run: helm lint charts/${{ inputs.chart }}
+        run: helm lint charts/${{ env.CHART }}
 
       - name: Helm package
-        run: helm package charts/${{ inputs.chart }}
+        run: helm package charts/${{ env.CHART }}
 
       # Public chart for customers: get.sh installs
       # oci://ghcr.io/oppervisiontech/charts/aegis-agent. After the first push,
       # set the package visibility to public in the org's Packages settings.
+      # A merge that doesn't bump `version` must not overwrite a published
+      # release of the chart.
+      - name: Skip if this version is already published
+        id: exists
+        run: |
+          version=$(helm show chart charts/${{ env.CHART }} | awk '/^version:/{print $2}')
+          if helm show chart "oci://ghcr.io/oppervisiontech/charts/${{ env.CHART }}" --version "$version" >/dev/null 2>&1; then
+            echo "${{ env.CHART }} $version already published; skipping push"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Login to GHCR
+        if: steps.exists.outputs.skip != 'true'
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io --username "${{ github.actor }}" --password-stdin
 
       - name: Push chart to GHCR
+        if: steps.exists.outputs.skip != 'true'
         run: |
-          pkg=$(ls ${{ inputs.chart }}-*.tgz)
+          pkg=$(ls ${{ env.CHART }}-*.tgz)
           echo "Pushing $pkg to oci://ghcr.io/oppervisiontech/charts"
           helm push "$pkg" oci://ghcr.io/oppervisiontech/charts
