@@ -2,6 +2,16 @@
 
 Helm charts for deploying all AegisOps components on Kubernetes.
 
+> **Status:** the platform environments (staging) are no longer deployed from
+> this repo. Their manifests, env and SOPS secrets live in
+> [`dodo_gitops`](https://github.com/OppervisionTech/dodo_gitops), applied by Flux.
+>
+> The one chart still in use is **`charts/aegis-agent`**: the customer installer
+> (`get.sh --mode k8s` in `dodo_agent`) installs it from
+> `oci://ghcr.io/oppervisiontech/charts/aegis-agent`, and each `dodo_agent`
+> release opens the chart bump PR here. Keep that chart maintained; treat the
+> other charts as legacy.
+
 ## Prerequisites
 
 - Helm 3.14+
