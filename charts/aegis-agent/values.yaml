@@ -109,6 +109,12 @@ enrollment:
 #   both empty                      -> TLS disabled
 
 # Buffer storage
+# Host identity. With the node's /etc/machine-id mounted, the agent keeps one
+# host id per node across pod restarts and reinstalls. Turn off only on nodes
+# without /etc/machine-id (the pod would not start: hostPath type File).
+identity:
+  mountHostMachineId: true
+
 buffer:
   type: hostPath  # hostPath or pvc
   hostPath: /var/lib/aegis-agent/buffer

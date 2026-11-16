@@ -96,6 +96,13 @@ spec:
             # (see apiKey.secretName in values.yaml) are all writable
             - name: buffer
               mountPath: /var/lib/aegis-agent
+            {{- if .Values.identity.mountHostMachineId }}
+            # The node's own machine-id: the agent's host identity survives pod
+            # restarts and reinstalls (one host, one entry in Hosts).
+            - name: machine-id
+              mountPath: /etc/machine-id
+              readOnly: true
+            {{- end }}
             {{- if .Values.tls.secretName }}
             - name: tls
               mountPath: /etc/aegis/tls
@@ -146,6 +153,12 @@ spec:
           hostPath:
             path: /var/log/pods
             type: Directory
+        {{- end }}
+        {{- if .Values.identity.mountHostMachineId }}
+        - name: machine-id
+          hostPath:
+            path: /etc/machine-id
+            type: File
         {{- end }}
         - name: buffer
           {{- if eq .Values.buffer.type "hostPath" }}
