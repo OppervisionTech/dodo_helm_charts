@@ -97,6 +97,15 @@ apiKey:
   secretName: ""
   secretKey: "api-key"
 
+# DoDo custom workflows: allow script steps (bash/python/node) to run as
+# ephemeral Jobs created through this agent. Off by default. Each script is
+# checked against the sha256 recorded when the workflow was saved. Jobs need
+# RBAC to create jobs/configmaps in the target namespaces (see rbac.yaml).
+workflows:
+  allowScripts: false
+  # Namespaces where script Jobs may be created (empty = release namespace).
+  namespaces: []
+
 # Self-enrollment endpoint (POST /v1/enroll). Active only when
 # tls.secretName is empty and apiKey.secretName is set — this is the new
 # default install path; see tls.secretName above for the static fallback.

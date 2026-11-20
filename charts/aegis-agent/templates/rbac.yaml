@@ -34,3 +34,41 @@ subjects:
     name: {{ include "aegis.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
+{{- if .Values.workflows.allowScripts }}
+{{- $namespaces := .Values.workflows.namespaces | default (list .Release.Namespace) }}
+{{- range $ns := $namespaces }}
+---
+# Only when DoDo workflow scripts are enabled: create the script's
+# ConfigMap + Job in this namespace, nothing else.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "aegis.fullname" $ }}-workflow-scripts
+  namespace: {{ $ns }}
+  labels:
+    {{- include "aegis.labels" $ | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create", "patch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "aegis.fullname" $ }}-workflow-scripts
+  namespace: {{ $ns }}
+  labels:
+    {{- include "aegis.labels" $ | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "aegis.fullname" $ }}-workflow-scripts
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "aegis.serviceAccountName" $ }}
+    namespace: {{ $.Release.Namespace }}
+{{- end }}
+{{- end }}
