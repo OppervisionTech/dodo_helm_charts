@@ -35,11 +35,27 @@ subjects:
     namespace: {{ .Release.Namespace }}
 {{- end }}
 {{- if .Values.workflows.allowScripts }}
-{{- $namespaces := .Values.workflows.namespaces | default (list .Release.Namespace) }}
-{{- range $ns := $namespaces }}
+{{- if not .Values.serviceAccount.create }}
+{{- fail "workflows.allowScripts needs serviceAccount.create=true (never grant Job creation to a shared ServiceAccount)" }}
+{{- end }}
+{{- range $ns := .Values.workflows.namespaces }}
+{{- if or (eq $ns $.Release.Namespace) (hasPrefix "kube-" $ns) (eq $ns "default") }}
+{{- fail (printf "workflows.namespaces: %q is not allowed for script Jobs — use a dedicated namespace" $ns) }}
+{{- end }}
+{{- if $.Values.workflows.createNamespaces }}
 ---
-# Only when DoDo workflow scripts are enabled: create the script's
-# ConfigMap + Job in this namespace, nothing else.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $ns }}
+  labels:
+    {{- include "aegis.labels" $ | nindent 4 }}
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+{{- end }}
+---
+# DoDo workflow scripts only: create the script's (immutable) ConfigMap and
+# its Job here. No patch/delete, nothing outside this namespace.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -50,10 +66,10 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["configmaps"]
-    verbs: ["get", "create", "patch"]
+    verbs: ["get", "create"]
   - apiGroups: ["batch"]
     resources: ["jobs"]
-    verbs: ["get", "list", "create", "patch"]
+    verbs: ["get", "list", "create"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
