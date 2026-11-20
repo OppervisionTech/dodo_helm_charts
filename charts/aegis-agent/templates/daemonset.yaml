@@ -128,6 +128,12 @@ spec:
                   name: {{ .Values.apiKey.secretName }}
                   key: {{ .Values.apiKey.secretKey | default "api-key" }}
             {{- end }}
+            {{- if .Values.workflows.allowScripts }}
+            # Lets DoDo workflows run bash/python/node scripts as Jobs in this
+            # cluster (the agent still checks each script's sha256).
+            - name: DODO_ALLOW_SCRIPTS
+              value: "true"
+            {{- end }}
       volumes:
         - name: config
           configMap:

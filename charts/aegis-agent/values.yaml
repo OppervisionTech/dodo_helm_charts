@@ -97,6 +97,19 @@ apiKey:
   secretName: ""
   secretKey: "api-key"
 
+# DoDo custom workflows: allow script steps (bash/python/node) to run as
+# ephemeral Jobs created through this agent. Off by default. Each script is
+# checked against the sha256 recorded when the workflow was saved. Jobs need
+# RBAC to create jobs/configmaps in the target namespaces (see rbac.yaml).
+workflows:
+  allowScripts: false
+  # Dedicated namespaces where script Jobs may run. Never kube-* or the
+  # agent's own namespace (the chart refuses them).
+  namespaces: ["dodo-workflows"]
+  # Create those namespaces with Pod Security "restricted" enforced (no
+  # privileged pods, hostPath, host network/PID, root).
+  createNamespaces: true
+
 # Self-enrollment endpoint (POST /v1/enroll). Active only when
 # tls.secretName is empty and apiKey.secretName is set — this is the new
 # default install path; see tls.secretName above for the static fallback.
