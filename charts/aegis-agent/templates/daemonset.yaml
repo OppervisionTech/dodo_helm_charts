@@ -134,6 +134,13 @@ spec:
             - name: DODO_ALLOW_SCRIPTS
               value: "true"
             {{- end }}
+            {{- if and .Values.workflows.allowHttp .Values.workflows.httpAllow }}
+            # Workflow HTTP steps "via agent": only these hosts, never others.
+            - name: DODO_ALLOW_HTTP
+              value: "true"
+            - name: DODO_HTTP_ALLOW
+              value: {{ join "," .Values.workflows.httpAllow | quote }}
+            {{- end }}
       volumes:
         - name: config
           configMap:

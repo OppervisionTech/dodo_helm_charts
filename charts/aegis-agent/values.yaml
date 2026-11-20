@@ -109,6 +109,10 @@ workflows:
   # Create those namespaces with Pod Security "restricted" enforced (no
   # privileged pods, hostPath, host network/PID, root).
   createNamespaces: true
+  # Let workflow HTTP steps call internal APIs from the agent's network.
+  # Off by default; only hosts in httpAllow (host, host:port, *.suffix).
+  allowHttp: false
+  httpAllow: []
 
 # Self-enrollment endpoint (POST /v1/enroll). Active only when
 # tls.secretName is empty and apiKey.secretName is set — this is the new

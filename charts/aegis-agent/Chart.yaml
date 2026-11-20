@@ -2,7 +2,7 @@ apiVersion: v2
 name: aegis-agent
 description: DoDo AegisOps Agent — DaemonSet for host-level telemetry collection
 type: application
-version: 0.3.6
+version: 0.3.7
 appVersion: "0.3.4"
 dependencies:
   - name: aegis-library
